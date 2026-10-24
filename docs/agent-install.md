@@ -6,7 +6,7 @@ Talis 是 macOS 桌面 App。这里的 agent 负责在你的 Mac 上完成源码
 
 在能够操作目标 Mac 终端的 agent 中，发送下面这句话：
 
-> 请读取 https://raw.githubusercontent.com/viowai/7viow-talis/main/docs/agent-install.md，按说明在我的这台 Mac 上安装并打开 Talis，保留已有模板和设置，并带我完成第一次使用。
+> 请按 https://raw.githubusercontent.com/viowai/7viow-talis/main/docs/agent-install.md 中的说明，在我的这台 Mac 上安装并打开 Talis，保留已有模板和设置，并带我完成第一次使用。
 
 ## 哪些 agent 可以协助
 

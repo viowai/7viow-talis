@@ -10,13 +10,13 @@ Talis 是 Mac 上随时可以唤起的 Prompt 工作台。写下想法，让追�
 
 ## 安装
 
-源码版 0.1.0 需要 macOS 13+、Swift 5.9+ 和 macOS SDK，当前验证覆盖 Apple Silicon。Intel 尚未验证。源码构建不需要付费 Apple Developer 会员。项目没有第三方 Swift Package 依赖。
+源码版 0.1.1 需要 macOS 13+、Swift 5.9+ 和 macOS SDK，当前验证覆盖 Apple Silicon。Intel 尚未验证。源码构建不需要付费 Apple Developer 会员。项目没有第三方 Swift Package 依赖。
 
 ### 让本机 AI agent 帮你安装
 
 复制下面这一句到能够操作这台 Mac 终端的 agent：
 
-> 请读取 https://raw.githubusercontent.com/viowai/7viow-talis/main/docs/agent-install.md，按说明在我的这台 Mac 上安装并打开 Talis，保留已有模板和设置，并带我完成第一次使用。
+> 请按 https://raw.githubusercontent.com/viowai/7viow-talis/main/docs/agent-install.md 中的说明，在我的这台 Mac 上安装并打开 Talis，保留已有模板和设置，并带我完成第一次使用。
 
 Codex 本机源码路径已验证。Claude Code、Cursor、Gemini CLI、VS Code 本地 agent 等在具备相应权限时可使用同一份指引，尚未逐宿主实测。系统确认和首次 API Key 配置由你完成。仅网页聊天或云端 Linux 任务无法直接安装到这台 Mac。详见 [agent 安装指引](docs/agent-install.md)。
 

@@ -51,6 +51,11 @@ enum KeychainStore {
     private static let vault = CredentialVault(storage: storage, legacy: AppLegacyCredentials(keychain: storage))
 
     static func migrateLegacyIfNeeded() throws { try vault.migrate() }
+    static func hasAPIKey(provider: String) async throws -> Bool {
+        try await Task.detached(priority: .userInitiated) {
+            try storage.contains(account: "provider.\(provider)")
+        }.value
+    }
     static func readAPIKey(provider: String = AppSettings.modelOption.id) throws -> String? {
         try vault.read(provider: provider)
     }
@@ -61,4 +66,3 @@ enum KeychainStore {
         try vault.delete(provider: provider)
     }
 }
-

@@ -31,8 +31,8 @@ public enum CredentialVaultError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .emptyKey: return "请输入有效的 API Key。"
-        case .missingKey: return "当前模型供应商尚未配置 API Key，请先打开设置。"
-        case .verificationFailed: return "密钥写入后未能正确读回，原配置已保留。"
+        case .missingKey: return "所选厂商还没有 API Key，请打开 AI 服务设置。"
+        case .verificationFailed: return "密钥写入后未能正确读回。请重新打开 AI 服务设置，检查后重试。"
         }
     }
 }

@@ -31,6 +31,11 @@ if ! SDK_PATH="$(xcrun --sdk macosx --show-sdk-path 2>/dev/null)" || [[ ! -d "$S
   echo "macOS SDK 不可用。请检查 Xcode / Command Line Tools 的安装和选择。" >&2
   exit 1
 fi
+MACOS_SDK_VERSION="$(xcrun --sdk macosx --show-sdk-version)"
+if (( ${MACOS_SDK_VERSION%%.*} < 26 )); then
+  echo "源码构建需要 macOS 26 SDK 或更新版本。请更新 Xcode / Command Line Tools；已构建 App 的最低系统版本仍为 macOS 13。" >&2
+  exit 1
+fi
 for tool in codesign ditto strip xattr; do
   if ! command -v "$tool" >/dev/null; then
     echo "缺少构建工具：${tool}。请检查 Apple 开发工具安装。" >&2

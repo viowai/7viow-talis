@@ -1,8 +1,16 @@
 # 安装与故障处理
 
-当前提供源码构建安装。需要 macOS 13+、Swift 5.9+ 和 macOS SDK，构建与运行已在 Apple Silicon 上验证。没有经过 Apple 公证的下载版，Intel 构建与运行尚未验证。
+[简体中文](install.md) | [English](install.en.md)
+
+当前提供预构建 App 和源码构建两种安装方式。预构建包需要 macOS 13 或以上，当前仅在 Apple Silicon 上验证。源码构建需要 Xcode 26 或更新版本的开发工具，包含 macOS 26 SDK 或更新版本。Intel 构建与运行尚未验证。
 
 想交给 AI agent？使用[一句话安装指引](agent-install.md)。想自己安装？按下面三步操作。
+
+## 下载预构建 App
+
+从 [GitHub Releases](https://github.com/viowai/7viow-talis/releases/latest) 下载 `talis-v1.0.0-macos-arm64-build41.zip`，解压后把 `Talis.app` 移到“应用程序”。
+
+发布包使用 ad-hoc 签名，未经过 Apple 公证。若 macOS 阻止打开，在 Finder 中右键 `Talis.app`，选择“打开”，再按系统提示确认。系统仍阻止时，使用下面的源码安装。不要全局关闭 Gatekeeper。
 
 ## 从源码安装
 
@@ -31,10 +39,10 @@ Talis 的标准安装位置是 `/Applications/Talis.app`。从 Finder 的“应�
 |---|---|
 | 日常 App | `/Applications/Talis.app` |
 | 个人模板、应用配置 | `~/Library/Application Support/Talis` |
-| API Key | macOS Keychain，按供应商分开 |
-| 源码构建缓存与本地打包输出 | `~/Library/Caches/Talis/Build` |
+| API Key | macOS 钥匙串，按供应商分开 |
+| 源码构建缓存与本地打包输出 | `~/Library/Caches/Talis/Build.noindex` |
 
-安装器先把构建产物完整复制到应用目录内的暂存位置并校验，再备份旧 App、安装新 App。替换或最终校验失败时会恢复原 App。如果系统阻止恢复，错误信息会给出保留的备份位置。升级成功后，原 App 留在 `~/Library/Application Support/Talis/Backups`，个人模板和设置保持原位。
+安装器先把构建产物完整复制到应用目录内的暂存位置并校验，再创建并验证旧 App 的压缩备份、安装新 App。替换或最终校验失败时会恢复原 App。如果系统阻止恢复，错误信息会给出保留的备份位置。升级成功后，原 App 的压缩备份留在 `~/Library/Application Support/Talis/Backups/Archives.noindex/<timestamp>/AppBundle.zip`，个人模板和设置保持原位。
 
 ## 权限不足时用 Finder 安装
 
@@ -42,10 +50,10 @@ Talis 的标准安装位置是 `/Applications/Talis.app`。从 Finder 的“应�
 
 ```bash
 bash scripts/build_desktop_app.sh
-open "$HOME/Library/Caches/Talis/Build/desktop"
+open "$HOME/Library/Caches/Talis/Build.noindex/desktop"
 ```
 
-退出现用 Talis。已有 App 时先在个人备份目录保留一份，再用 Finder 把新 `Talis.app` 拖到“应用程序”，完成 macOS 管理员确认。不要把密码发送给 AI agent。
+退出现用 Talis。已有 App 时先用 `ditto -c -k --rsrc --extattr --acl --sequesterRsrc /Applications/Talis.app "$HOME/Talis-backup.zip"` 保留压缩备份，再用 Finder 把新 `Talis.app` 拖到“应用程序”，完成 macOS 管理员确认。不要把密码发送给 AI agent。
 
 ## 只构建
 
@@ -55,7 +63,7 @@ open "$HOME/Library/Caches/Talis/Build/desktop"
 bash scripts/build_desktop_app.sh
 ```
 
-构建产物在 `~/Library/Caches/Talis/Build/desktop/Talis.app`。开发工具可以免费获取。首次编译需要等待，耗时取决于机器。项目没有外部 Swift Package 依赖。
+构建产物在 `~/Library/Caches/Talis/Build.noindex/desktop/Talis.app`。开发工具可以免费获取。首次编译需要等待，耗时取决于机器。项目没有外部 Swift Package 依赖。
 
 ## 常见问题
 
@@ -67,9 +75,9 @@ bash scripts/build_desktop_app.sh
 | 已装开发工具但仍报错 | 查看 `xcode-select -p`、`swift --version` 和 `xcrun --sdk macosx --show-sdk-path`。修正工具选择，不反复安装 Talis |
 | 提示先退出 Talis | 保存或复制正在编辑的内容，正常退出后重试。安装器不会强制结束进程 |
 | 无权写入“应用程序” | 使用上面的 Finder 安装路径并完成系统确认 |
-| 下载 App 被 macOS 拦截 | 当前本地打包脚本未提供 Developer ID 签名和公证，使用源码构建。不要关闭系统保护 |
+| 下载 App 被 macOS 拦截 | 发布包使用 ad-hoc 签名，未经过 Apple 公证。在 Finder 中右键选择“打开”并确认提示；仍被阻止时使用源码构建。不要全局关闭 Gatekeeper |
 | App 打开但 AI 操作失败 | 从菜单检查当前供应商和 API Key。安装成功与模型账号可用是两个条件 |
-| `Option + Space` 没有唤起 | 先打开 Talis，再检查其他工具是否占用同一快捷键 |
+| `Option + Space` 没有唤起 | 从菜单栏或 Dock 打开 Talis；若提示“全局快捷键未启用”，记录错误码并检查其他工具是否占用同一组合键 |
 
 需要帮助时，在 [GitHub Issues](https://github.com/viowai/7viow-talis/issues) 附上 App 版本、macOS 版本、芯片类型、失败命令和错误信息。不要附 API Key、私人模板或完整个人配置。
 
@@ -79,10 +87,20 @@ bash scripts/build_desktop_app.sh
 bash scripts/package_local.sh
 ```
 
-输出在 `~/Library/Caches/Talis/Build/packages`。磁盘映像包含 Talis.app 和“应用程序”快捷方式。脚本生成的是本地临时签名包，未取得 Developer ID 签名和 Apple 公证。其他 Mac 的默认 Gatekeeper 可能阻止打开。这些包不具备经过 Apple 公证的下载版体验。
+输出在 `~/Library/Caches/Talis/Build.noindex/packages`。磁盘映像包含 Talis.app 和“应用程序”快捷方式。脚本生成的是本地临时签名包，未取得 Developer ID 签名和 Apple 公证。其他 Mac 的默认 Gatekeeper 可能阻止打开。这些包不具备经过 Apple 公证的下载版体验。
 
 ## 更新和恢复
 
-更新前退出 App。安装器仅替换应用包，用户数据独立保留。API Key 迁移完成后由 Keychain 管理，恢复旧版前先保留当前数据。过旧版本可能不认识新的供应商密钥存储，需要重新配置。
+更新前退出 App。安装器仅替换应用包，用户数据独立保留。API Key 迁移完成后由 macOS 钥匙串管理，恢复旧版前先保留当前数据。过旧版本可能不认识新的供应商密钥存储，需要重新配置。
 
 卸载时删除 `/Applications/Talis.app` 即可移除程序。若希望同时移除某供应商密钥，先在设置中选择该供应商并点击“移除 API Key”。个人模板需要保留时，不删除应用数据目录。
+
+恢复压缩备份时，先退出 App。在 `~/Library/Caches/Talis/Restore.noindex/Talis.app` 解包：
+
+```bash
+mkdir -p "$HOME/Library/Caches/Talis/Restore.noindex"
+ditto -x -k --rsrc --extattr --acl "/实际备份路径/AppBundle.zip" \
+  "$HOME/Library/Caches/Talis/Restore.noindex/Talis.app"
+```
+
+每次恢复使用空的目标目录，不合并不同备份。核对版本、数据身份与签名后，按上面的 Finder 安装步骤恢复。源 ZIP 保留；备份目录中不重新生成应用副本。

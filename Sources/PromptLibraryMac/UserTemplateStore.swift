@@ -17,12 +17,20 @@ struct UserPromptTemplate: Codable, Equatable, Identifiable {
     var libraryItem: LibraryItem {
         LibraryItem(
             title: title,
-            detail: detail.isEmpty ? "我的专属 Prompt 模板" : detail,
+            detail: detail.isEmpty ? L("个人模板") : detail,
             symbolName: "person.crop.square.filled.and.at.rectangle",
-            badge: "我的",
+            badge: L("我的"),
             body: body,
-            origin: .user(id: id)
+            origin: .user(id: id),
+            recency: recency()
         )
+    }
+
+    func recency(asOf date: Date = Date(), recentDays: Int = 7) -> TemplateRecency? {
+        let recentInterval = TimeInterval(recentDays * 24 * 60 * 60)
+        guard updatedAt.timeIntervalSince(date) <= 0,
+              date.timeIntervalSince(updatedAt) <= recentInterval else { return nil }
+        return updatedAt.timeIntervalSince(createdAt) > 1 ? .updated : .new
     }
 }
 
@@ -57,7 +65,7 @@ enum UserTemplateStore {
             id: UUID(),
             title: sanitizedTitle(draft.title),
             detail: draft.detail.trimmingCharacters(in: .whitespacesAndNewlines),
-            body: draft.body.trimmingCharacters(in: .whitespacesAndNewlines),
+            body: draft.body,
             createdAt: now,
             updatedAt: now
         )
@@ -73,7 +81,6 @@ enum UserTemplateStore {
         var updated = template
         updated.title = sanitizedTitle(updated.title)
         updated.detail = updated.detail.trimmingCharacters(in: .whitespacesAndNewlines)
-        updated.body = updated.body.trimmingCharacters(in: .whitespacesAndNewlines)
         updated.updatedAt = Date()
         templates[index] = updated
         try save(templates)
@@ -123,7 +130,7 @@ enum UserTemplateStore {
 
     private static func sanitizedTitle(_ value: String) -> String {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "未命名模板" : trimmed
+        return trimmed.isEmpty ? L("未命名模板") : trimmed
     }
 
     private static func normalize(_ value: String) -> String {

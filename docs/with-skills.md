@@ -1,5 +1,7 @@
 # 与 skill/s 配合
 
+[简体中文](with-skills.md) | [English](with-skills.en.md)
+
 先在 Talis 整理需求，再把请求交给当前 AI 工具继续处理。接收端已经安装相应 skill/s 时，可以用它完成写作、设计或研究任务。没有时，这份请求仍是可以直接使用的普通文本。Talis 与这些 skill/s 都可以独立使用。
 
 | 你要完成什么 | Talis 系统模板 | 接收端可选 Skill |

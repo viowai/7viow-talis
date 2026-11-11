@@ -1,0 +1,26 @@
+import Foundation
+import Carbon
+
+let standard = AppIdentity(bundleIdentifier: "local.prompt-library.overlay")
+let preview = AppIdentity(bundleIdentifier: "local.prompt-library.overlay.preview")
+let v1 = AppIdentity(bundleIdentifier: "local.prompt-library.overlay.v1-preview")
+let commandLine = AppIdentity(bundleIdentifier: nil)
+
+precondition(standard.dataDirectoryName == "Talis")
+precondition(standard.keychainService == "local.prompt-library.overlay.openai")
+precondition(standard.hotKeyModifiers == UInt32(optionKey))
+precondition(commandLine.dataDirectoryName == standard.dataDirectoryName)
+precondition(preview.dataDirectoryName != standard.dataDirectoryName)
+precondition(preview.keychainService != standard.keychainService)
+precondition(preview.hotKeyModifiers == UInt32(optionKey | shiftKey))
+precondition(preview.shortcutLabel == "⌥⇧Space")
+precondition(preview.displayName == "Talis")
+precondition(v1.isPreview && v1.isV1Preview)
+precondition(v1.dataDirectoryName == "Talis v1 Preview")
+precondition(preview.dataDirectoryName == "Talis Preview")
+precondition(v1.displayName == "Talis")
+precondition(v1.dataDirectoryName != standard.dataDirectoryName && v1.dataDirectoryName != preview.dataDirectoryName)
+precondition(v1.keychainService != standard.keychainService && v1.keychainService != preview.keychainService)
+precondition(v1.hotKeyModifiers == UInt32(optionKey | shiftKey))
+precondition(!standard.isV1Preview && !preview.isV1Preview)
+print("PASS: preview storage, keychain, identity and shortcut remain separate; standard identity preserved")

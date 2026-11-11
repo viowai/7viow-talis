@@ -92,13 +92,31 @@ let clean = try String(contentsOf:config,encoding:.utf8)
 try check(!clean.contains("fixture-key") && clean.contains("model: deepseek") && clean.contains("other: keep") && clean.contains("# keep comment"), "config cleanup preserves nonsecret content")
 
 // Real Keychain test uses disposable fake values and an isolated service only.
+let importSource = MemorySecrets(), importTarget = MemorySecrets()
+importSource.values = ["provider.deepseek": "source-key", "provider.kimi": "second-source-key", "legacy.defaults.deepseek": "recovery-only"]
+importTarget.values = ["provider.kimi": "preview-own-key"]
+let importBefore = importSource.values
+try check(PreviewCredentialImport.copy(providers: ["deepseek", "kimi", "openai"], from: importSource, to: importTarget) == 1, "explicit preview import copies configured providers only")
+try check(importTarget.values["provider.deepseek"] == "source-key" && importTarget.values["provider.kimi"] == "preview-own-key", "preview's existing credential is not overwritten")
+try check(importSource.values == importBefore && importTarget.values["legacy.defaults.deepseek"] == nil, "import never changes source or duplicates recovery-only items")
+try check(PreviewCredentialImport.copy(providers: ["deepseek", "kimi"], from: importSource, to: importTarget) == 0, "repeated import preserves target credentials")
+importTarget.values = [:];importTarget.failWrite = true
+mustThrow("preview import write failure surfaced") { _ = try PreviewCredentialImport.copy(providers: ["deepseek"], from: importSource, to: importTarget) }
+try check(importSource.values == importBefore, "failed preview import preserves source keys")
+importTarget.failWrite = false;importTarget.corruptWrite = true
+mustThrow("preview import verification failure surfaced") { _ = try PreviewCredentialImport.copy(providers: ["deepseek"], from: importSource, to: importTarget) }
+
 let real = SystemKeychainStorage(service:"local.talis.credential-tests.\(UUID().uuidString)")
 defer { try? real.delete(account:"provider.deepseek");try? real.delete(account:"provider.openai") }
+try check(!real.contains(account:"provider.deepseek"), "metadata presence reports an absent item without reading a secret")
 try real.write("fake-key-a",account:"provider.deepseek")
 try real.write("fake-key-b",account:"provider.openai")
+try check(real.contains(account:"provider.deepseek") && real.contains(account:"provider.openai"), "metadata presence follows each provider independently")
+try check(!real.contains(account:"provider.kimi"), "metadata presence never falls back to another provider")
 try check(real.read(account:"provider.deepseek") == "fake-key-a" && real.read(account:"provider.openai") == "fake-key-b", "real keychain provider isolation")
 try real.write("fake-key-a2",account:"provider.deepseek")
 try check(real.read(account:"provider.deepseek") == "fake-key-a2", "real keychain in-place update")
 try real.delete(account:"provider.deepseek")
+try check(!real.contains(account:"provider.deepseek"), "metadata presence follows deletion")
 try check(real.read(account:"provider.deepseek") == nil && real.read(account:"provider.openai") == "fake-key-b", "real keychain scoped deletion")
 print("PASS: \(count) credential checks including real isolated Keychain CRUD; no real keys logged")

@@ -19,6 +19,11 @@ let package = Package(
             name: "PromptLibraryMac",
             dependencies: ["TalisCore"],
             path: "Sources/PromptLibraryMac"
+        ),
+        .testTarget(
+            name: "TalisCoreTests",
+            dependencies: ["TalisCore"],
+            path: "Tests/TalisCoreTests"
         )
     ]
 )

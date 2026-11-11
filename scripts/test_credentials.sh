@@ -8,7 +8,9 @@ swiftc -emit-library -emit-module -module-name TalisCore \
   -emit-module-path "$TEST_DIR/TalisCore.swiftmodule" -o "$TEST_DIR/libTalisCore.dylib"
 swiftc -I "$TEST_DIR" -L "$TEST_DIR" -lTalisCore -Xlinker -rpath -Xlinker "$TEST_DIR" \
   "$ROOT_DIR/Sources/PromptLibraryMac/SystemKeychainStorage.swift" \
+  "$ROOT_DIR/Sources/PromptLibraryMac/AppLocalization.swift" \
   "$ROOT_DIR/Sources/PromptLibraryMac/AppIdentity.swift" \
   "$ROOT_DIR/Sources/PromptLibraryMac/AppConfigFile.swift" \
+  "$ROOT_DIR/Sources/PromptLibraryMac/PreviewCredentialImport.swift" \
   "$ROOT_DIR/scripts/credential-tests/main.swift" -o "$TEST_DIR/credential-tests"
 "$TEST_DIR/credential-tests"

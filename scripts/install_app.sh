@@ -11,14 +11,15 @@ if [[ "$MODE" == --help ]]; then
   exit 0
 fi
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-CACHE_DIR="${TALIS_BUILD_CACHE_DIR:-$HOME/Library/Caches/Talis/Build}"
+source "$ROOT_DIR/scripts/artifact_paths.sh"
+CACHE_DIR="$(talis_build_cache)"
 TARGET_APP="/Applications/Talis.app"
 bash "$ROOT_DIR/scripts/check_environment.sh"
 if [[ ! -w /Applications ]]; then
   echo "当前用户不能写入 /Applications。请在 Finder 中移动构建好的 Talis.app，并完成系统管理员确认。" >&2
   exit 1
 fi
-if pgrep -f '^/Applications/Talis.app/Contents/MacOS/PromptLibraryMac$' >/dev/null; then
+if pgrep -f '^/Applications/Talis\.app/Contents/MacOS/PromptLibraryMac( |$)' >/dev/null; then
   echo "请先退出 Talis，保留需要的编辑内容后再安装。" >&2
   exit 1
 fi
@@ -30,4 +31,4 @@ bash "$ROOT_DIR/scripts/build_desktop_app.sh"
 SOURCE_APP="$CACHE_DIR/desktop/Talis.app"
 source "$ROOT_DIR/scripts/install_bundle.sh"
 install_bundle "$SOURCE_APP" "$TARGET_APP" "$HOME/Library/Application Support/Talis/Backups"
-echo "数据位于 ~/Library/Application Support/Talis；密钥由 macOS Keychain 管理。"
+echo "数据位于 ~/Library/Application Support/Talis；API Key 由 macOS 钥匙串管理。"

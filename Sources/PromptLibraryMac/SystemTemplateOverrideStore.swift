@@ -29,15 +29,14 @@ enum SystemTemplateOverrideStore {
     }
 
     static func update(id: String, title: String, body: String) throws {
-        let trimmedBody = body.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedBody.isEmpty else { return }
+        guard !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         var overrides = all()
         if let index = overrides.firstIndex(where: { $0.id == id }) {
             overrides[index].title = title
-            overrides[index].body = trimmedBody
+            overrides[index].body = body
             overrides[index].updatedAt = Date()
         } else {
-            overrides.append(SystemTemplateOverride(id: id, title: title, body: trimmedBody, updatedAt: Date()))
+            overrides.append(SystemTemplateOverride(id: id, title: title, body: body, updatedAt: Date()))
         }
         try save(overrides)
     }

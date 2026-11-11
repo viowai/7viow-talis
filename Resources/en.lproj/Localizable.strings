@@ -1,0 +1,488 @@
+/* English UI only. Prompt instructions and saved template content are not localized. */
+"跟随系统" = "Follow System";
+"结束追问" = "End Grill-me";
+"跳过" = "Skip";
+"下一题" = "Next Question";
+"重试" = "Retry";
+"追问 · 第 %@ 轮 · 问题 %@/%@" = "Grill-me · Round %@ · Question %@ of %@";
+"追问 · 第 %@ 轮" = "Grill-me · Round %@";
+"提交本轮" = "Submit Answers";
+"追问 · 正在整理…" = "Grill-me · Preparing…";
+"正在分析当前 Prompt，请稍候。" = "Reviewing your Prompt. Please wait.";
+"追问 · 无需补充" = "Grill-me · No Details Needed";
+"当前 Prompt 信息已经足够明确。\\n\\n没有发现会显著影响执行的问题。可以直接使用整理后的版本，或返回原文。" = "Your Prompt has enough detail.\\n\\nNo missing information would significantly affect the result. Use the revised Prompt or return to your original text.";
+"使用整理后的 Prompt" = "Use Revised Prompt";
+"返回原文" = "Return to Original";
+"关闭追问并保留原文" = "Close Grill-me and keep the original text";
+"当前 Prompt 信息已经足够明确，无需补充。" = "Your Prompt has enough detail. Grill-me is not needed.";
+"停止" = "Stop";
+"停止请求，保留当前回答" = "Stop the request and keep the current answers";
+"结束追问并回到原文" = "End Grill-me and return to the original text";
+"追问" = "Grill-me";
+"追问记录：" = "Grill-me History:";
+"第 %@ 轮" = "Round %@";
+"追问请求未完成" = "The Grill-me request was not completed";
+"原文和本轮回答已保留。" = "Your original text and answers from this round are preserved.";
+"%@，%@原文和本轮回答已保留。" = "%@, %@ Your original text and answers from this round are preserved.";
+"追问处理中" = "Preparing Grill-me";
+"或输入自定义回答" = "Or enter your own answer";
+"自定义回答" = "Your answer";
+"跳过这一题，保留为未知信息" = "Skip this question and leave this information unspecified";
+"微调" = "Refine";
+"重构" = "Rewrite";
+"我的 Prompt 模板" = "My Prompt Template";
+"从当前 Prompt 自动生成" = "Created from the current Prompt";
+"%@ 请求失败。" = "%@ request failed.";
+"%@ 请求失败：HTTP %@" = "%@ request failed: HTTP %@";
+"OpenAI API 余额已用尽。请改用“订阅共享”中的 Codex，或为 OpenAI API 充值。" = "Your OpenAI API balance is exhausted. Use Codex under Subscription, or add funds to your OpenAI API account.";
+"当前 ChatGPT 账号的 Codex 订阅不可用于此请求。请检查登录与套餐。" = "The Codex subscription for this ChatGPT account cannot be used for this request. Check your login and plan.";
+"[密钥已隐藏]" = "[Key hidden]";
+"等待超时，请重试。" = "The request timed out. Try again.";
+"网络连接中断，请重试。" = "The network connection was interrupted. Try again.";
+"网络未连接，请连接后重试。" = "You are offline. Connect to the internet and try again.";
+"Codex 订阅当前不可用。请确认已登录 Codex 订阅。" = "Codex subscription is unavailable. Confirm that you are signed in to Codex with an active subscription.";
+"本机共享服务当前不可用。请确认服务已登录且本地共享网关正在运行。" = "The local shared service is unavailable. Confirm that the service is signed in and the local shared gateway is running.";
+"无法连接 AI 服务，请稍后重试。" = "Cannot connect to the AI service. Try again later.";
+"TLS 安全连接未能建立，请重试。" = "Could not establish a secure TLS connection. Try again.";
+"AI 服务的证书无法验证，请检查网络或代理设置。" = "The AI service certificate could not be verified. Check your network or proxy settings.";
+"当前网络限制 AI 请求，请切换网络后重试。" = "Your current network blocks AI requests. Switch networks and try again.";
+"个人模板" = "Personal template";
+"请先输入需求或插入模板。" = "Enter a request or insert a template first.";
+"模型没有返回可用内容。" = "The model returned no usable content.";
+"模型结果未完整返回，请重试。" = "The model response was incomplete. Try again.";
+"请先在 AI 服务设置中填写所选厂商的 API Key。" = "Add the selected provider's API Key in AI Service Settings first.";
+"模型返回的追问格式不可用，请重试。" = "The model returned an invalid Grill-me format. Try again.";
+"模型返回的结果没有保留原有标题或列表结构。原文和追问记录已保留，请重试。" = "The model result did not preserve the original headings or lists. Your original text and Grill-me history are preserved. Try again.";
+"隐藏 %@" = "Hide %@";
+"打开 %@" = "Open %@";
+"新建 Prompt" = "New Prompt";
+"恢复上次草稿" = "Restore Last Draft";
+"修改记录" = "Revision History";
+"模板中心" = "Template Center";
+"AI 服务设置…" = "AI Service Settings…";
+"关于 %@" = "About %@";
+"退出 %@" = "Quit %@";
+"已取消钥匙串授权，原密钥仍保留。需要时可以重新尝试。" = "Keychain authorization was cancelled. Your existing key is unchanged. You can try again.";
+"未知错误" = "Unknown error";
+"无法访问 macOS 钥匙串（%@）：%@。请解锁登录钥匙串，并在系统提示中允许 Talis 访问后重试。" = "Cannot access macOS Keychain (%@): %@. Unlock your login keychain and allow Talis access when macOS asks, then try again.";
+"保存修改" = "Save Changes";
+"保存服务设置" = "Save Service Settings";
+"管理" = "Manage";
+"搜索" = "Search";
+"存为新" = "Save as New";
+"新增" = "New";
+"正文" = "Content";
+"暂无模板" = "No templates";
+"无匹配" = "No matches";
+"未命名" = "Untitled";
+"未保存" = "Unsaved";
+"已保存" = "Saved";
+"已删除" = "Deleted";
+"保存模板" = "Save Template";
+"删除模板…" = "Delete Template…";
+"我的模板" = "My Templates";
+"搜索名称、说明或内容" = "Search names, descriptions, or content";
+"搜索我的模板" = "Search My Templates";
+"新增模板" = "New Template";
+"模板名称" = "Template name";
+"模板说明" = "Template description";
+"模板正文" = "Template content";
+"名称" = "Name";
+"说明" = "Description";
+"模板内容" = "Template Content";
+"还没有个人模板，点击新增模板开始。" = "No personal templates yet. Choose New Template to get started.";
+"没有匹配的模板，试试其他关键词。" = "No matching templates. Try different keywords.";
+"有未保存的修改" = "Unsaved changes";
+"放弃未保存的修改？" = "Discard Unsaved Changes?";
+"当前模板还没有保存。可以继续编辑，或放弃这次修改。" = "This template has not been saved. Keep editing or discard your changes.";
+"继续编辑" = "Keep Editing";
+"放弃修改" = "Discard Changes";
+"新模板" = "New Template";
+"填写模板名称和内容后保存。" = "Add a name and content, then save.";
+"请填写模板名称和内容。" = "Enter a template name and content.";
+"已保存。" = "Saved.";
+"模板已保存" = "Template saved";
+"删除模板？" = "Delete Template?";
+"将删除「%@」，此操作不可撤销。" = "%@ will be deleted. This cannot be undone.";
+"未保存的修改也会丢失。" = "Unsaved changes will also be lost.";
+"取消" = "Cancel";
+"删除" = "Delete";
+"已删除。" = "Deleted.";
+"订阅共享" = "Subscription";
+"获取 API Key ↗" = "Get API Key ↗";
+"移除 API Key…" = "Remove API Key…";
+"AI 服务设置" = "AI Service Settings";
+"设置" = "Settings";
+"设置…" = "Settings…";
+"设置（⌘,）" = "Settings (⌘,)";
+"通用" = "General";
+"AI 服务" = "AI Service";
+"应用语言" = "App Language";
+"语言修改立即生效；macOS 提供的系统菜单仍跟随系统语言。" = "Language changes apply immediately. Menu commands provided by macOS follow the system language.";
+"系统服务" = "Services";
+"在独立工作窗口中打开" = "Open in Workspace Window";
+"缩放窗口" = "Zoom Window";
+"选择连接方式。API Key 按厂商存入 macOS 钥匙串；订阅用本机账号。" = "Choose how Talis connects. API keys stay in macOS Keychain; subscriptions use the account already signed in on this Mac.";
+"Talis 不显示已保存密钥，也不复制订阅登录凭据。" = "Talis never shows saved keys or copies sign-in credentials.";
+"认证方式" = "Authentication";
+"服务" = "Service";
+"服务区域" = "Service Region";
+"HTTPS 接口基础地址" = "HTTPS base URL";
+"输入新 API Key；留空保留已有密钥" = "Enter a new API Key; leave blank to keep the existing key";
+"控制台提供的 HTTPS 基础地址" = "HTTPS base URL from the provider console";
+"设置状态" = "Settings status";
+"接口地址" = "Endpoint";
+"自定义接口…" = "Custom Endpoint…";
+"无需 API Key。Talis 会使用本机已登录的 Codex 订阅。" = "No API Key is needed. Talis uses the Codex subscription already signed in on this Mac.";
+"无需 API Key。Talis 会使用本机共享的 %@ 服务。" = "No API Key is needed. Talis uses the local shared %@ service.";
+"正在检查密钥状态…" = "Checking key status…";
+"此厂商已保存 API Key。" = "API Key saved for this provider.";
+"此厂商尚未保存 API Key。" = "No API Key saved for this provider.";
+"请填写控制台提供的完整 HTTPS 基础地址，不要包含 API Key。" = "Enter the complete HTTPS base URL from the provider console. Do not include an API Key.";
+"厂商设置已保存。" = "Provider settings saved.";
+"厂商设置与 API Key 已保存。" = "Provider settings and API Key saved.";
+"订阅设置已保存。" = "Subscription settings saved.";
+"移除 %@ 的 API Key？" = "Remove API Key for %@?";
+"移除后，此厂商的 AI 功能将无法使用。其他厂商的密钥不变，需要时可重新填写。" = "AI features for this provider will stop working. Keys for other providers are unchanged. You can add a key again later.";
+"移除" = "Remove";
+"已移除此厂商的密钥。" = "This provider's key has been removed.";
+"保存为我的模板" = "Save to My Templates";
+"预览并确认模板" = "Preview and Confirm Template";
+"检查模板名称和内容，确认后保存到我的模板。" = "Review the name and content, then save to My Templates.";
+"保存" = "Save";
+"模板内容尚未保存。可以继续编辑，或放弃这次修改。" = "This template has not been saved. Keep editing or discard your changes.";
+"已保存到我的模板。" = "Saved to My Templates.";
+"上一轮" = "Previous";
+"下一轮" = "Next";
+"选择修改轮次" = "Choose a revision";
+"返回编辑" = "Back to Editor";
+"本轮输入与结果" = "Input and result for this revision";
+"输入" = "Input";
+"结果" = "Result";
+"选择模板" = "Choose Template";
+"应用选中模板" = "Apply Selected Template";
+"切换模板来源" = "Switch Template Source";
+"收起模板选择" = "Dismiss Template Selection";
+"模板快捷键" = "Template Shortcuts";
+"快捷键" = "Shortcuts";
+"选择" = "Select";
+"来源" = "Source";
+"收起" = "Close";
+"查看模板快捷键" = "Show template keyboard shortcuts";
+"我的" = "My";
+"未命名模板" = "Untitled Template";
+"系统模板" = "System Templates";
+"系统" = "System";
+"更新" = "Update";
+"7 天内新建的个人模板" = "Personal template created in the last 7 days";
+"7 天内修改过的个人模板" = "Personal template updated in the last 7 days";
+"原模板不存在，可能已在模板库中被删除。" = "The original template no longer exists. It may have been deleted from the template library.";
+"可用模板：%@" = "Available template: %@";
+"选择套用或忽略此建议；" = "Apply this suggestion or dismiss it; ";
+"可用模板" = "Available template";
+"套用此模板" = "Apply This Template";
+"忽略本次建议" = "Dismiss This Suggestion";
+"忽略" = "Dismiss";
+"建议" = "Suggested";
+"已选中下方项" = "Selected below";
+"%@：%@。已选中下方模板；应用动作位于模板行，也可忽略建议" = "%@: %@. The template below is selected. Apply it from its row, or dismiss the suggestion.";
+"输入内容…" = "Enter your request…";
+"全文缩略图" = "Document overview";
+"%@ 个占位符" = "%@ placeholders";
+"点击紫色标记跳到对应占位符" = "Click a violet marker to jump to its placeholder";
+"全文缩略图；1 个占位符，点击紫色标记跳转" = "Document overview; 1 placeholder. Click a violet marker to jump to it.";
+"全文缩略图；%@ 个占位符，点击紫色标记跳转" = "Document overview; %@ placeholders. Click a violet marker to jump to one.";
+"应用" = "Apply";
+"替换" = "Replace";
+"用此模板替换正文；可按 ⌘Z 撤销" = "Replace the editor text with this template. Undo with ⌘Z.";
+"把此模板放入内容框" = "Insert this template into the editor";
+"【】标记和正文均可编辑
+按 Tab 跳到下一处" = "【】 Markers and text are editable
+Press Tab for the next placeholder";
+"待填标记说明" = "Placeholder marker guide";
+"清空" = "Clear";
+"详情" = "Details";
+"存为新模板…" = "Save as New Template…";
+"覆盖原模板…" = "Update Original Template…";
+"复制 Prompt" = "Copy Prompt";
+"恢复会话" = "Restore Session";
+"AI 服务设置（⌘,）" = "AI Service Settings (⌘,)";
+"清空正文与修改记录；可按 ⌘Z 撤销" = "Clear the text and revision history. Undo with ⌘Z.";
+"Prompt编辑区" = "Prompt editor";
+"输入需求；空输入时按 / 或随时按 ⌘K 选择模板" = "Enter a request. Press / in an empty editor or ⌘K at any time to choose a template.";
+"回到正文顶部" = "Back to Top";
+"恢复最近一次收起的正文、模板来源和全部修改记录" = "Restore the most recently dismissed text, template source, and complete revision history";
+"在独立窗口查看本次编辑的全部输入与结果" = "View every input and result from this editing session in a separate window";
+"管理我的模板" = "Manage My Templates";
+"管理我的模板库" = "Manage your personal template library";
+"管理…" = "Manage…";
+"搜索模板名称、说明和内容" = "Search template names, descriptions, and content";
+"搜索模板…" = "Search templates…";
+"搜索模板" = "Search Templates";
+"提取可复用模板，预览后保存" = "Create a reusable template, then preview and save it";
+"用当前内容更新来源模板" = "Update the source template with the current content";
+"模板" = "Templates";
+"打开模板中心…" = "Open Template Center…";
+"模板菜单" = "Template menu";
+"保留原意与结构，调整表达（⌘R）" = "Keep the meaning and structure while improving the wording (⌘R)";
+"按当前需求重新组织内容（⌘G）" = "Reorganize the content for the current request (⌘G)";
+"先回答关键问题，再生成Prompt" = "Answer key questions before generating the Prompt";
+"复制当前文字（⌘Return）" = "Copy the current text (⌘Return)";
+"操作状态" = "Operation status";
+"状态说明" = "Status details";
+"AI 处理中" = "AI processing";
+"查看错误原因和技术信息" = "View the error cause and technical details";
+"重新执行刚才的操作" = "Run the last operation again";
+"已复制" = "Copied";
+"复制 Prompt  ⌘↵" = "Copy Prompt  ⌘↵";
+"撤销" = "Undo";
+"重做" = "Redo";
+"暂无个人模板" = "No Personal Templates";
+"没有匹配的模板" = "No Matching Templates";
+"修改记录 · %@ 轮" = "Revision History · %@ Rounds";
+"第 %@ 轮 · %@ · %@" = "Round %@ · %@ · %@";
+"打开模板中心（⌘K）" = "Open Template Center (⌘K)";
+"用当前内容更新「%@」" = "Update %@ with the current content";
+"从模板插入后，可用当前内容更新原模板" = "After inserting a template, you can update it with the current content";
+"正在追问…" = "Preparing Grill-me…";
+"正在整理追问…" = "Preparing Grill-me…";
+"追问失败" = "Grill-me Failed";
+"追问已完成" = "Grill-me Complete";
+"正在" = "Working: ";
+"已完成" = "Completed";
+"失败" = "Failed";
+"正在提取模板…" = "Creating Template…";
+"生成模板失败" = "Template Generation Failed";
+"等待 AI 响应…" = "Waiting for AI…";
+"已停止，原文已保留" = "Stopped. Your original text is preserved.";
+"已保存为模板" = "Saved as Template";
+"用当前内容替换模板「%@」在这台 Mac 上的正文。" = "Replace the content of %@ on this Mac with the current text.";
+"无法更新模板" = "Cannot Update Template";
+"用当前内容替换模板「%@」的正文。" = "Replace the content of %@ with the current text.";
+"模板已更新" = "Template Updated";
+"更新模板失败" = "Template Update Failed";
+"更新模板？" = "Update Template?";
+"正在处理…" = "Processing…";
+"读取 API Key 失败" = "Could Not Read API Key";
+"请先设置 API Key" = "Set Up an API Key First";
+"请先在“设置”的 AI 服务中填写所选厂商的 API Key。" = "Add the selected provider's API Key under Settings > AI Service first.";
+"请在“设置”的 AI 服务中填写所选厂商的 API Key。API Key 保存在 macOS 钥匙串中。" = "Add the selected provider's API Key under Settings > AI Service. API Keys are stored in macOS Keychain.";
+"请在 AI 服务设置中填写所选厂商的 API Key。API Key 保存在 macOS 钥匙串中。" = "Add the selected provider's API Key in AI Service Settings. API Keys are stored in macOS Keychain.";
+"打开设置" = "Open Settings";
+"安全连接在 TLS 握手阶段失败。应用没有自动重发本次推理请求，因此不会产生重复提交。" = "The secure connection failed during the TLS handshake. Talis did not automatically resend this request, so no duplicate submission was made.";
+"好" = "OK";
+"套用模板" = "Apply Template";
+"插入模板" = "Insert Template";
+"复制失败" = "Copy Failed";
+"系统剪贴板暂时不可用，请稍后重试。" = "The system clipboard is unavailable. Try again later.";
+"复制成功" = "Copied";
+"会话恢复未完成" = "Session Restore Incomplete";
+"全局快捷键未启用" = "Global Shortcut Not Enabled";
+"无法启用 %@（错误 %@）。你仍可从菜单栏或 Dock 打开 Talis。" = "Could not enable %@ (error %@). You can still open Talis from the menu bar or Dock.";
+"文件" = "File";
+"关闭窗口" = "Close Window";
+"编辑" = "Edit";
+"剪切" = "Cut";
+"复制" = "Copy";
+"粘贴" = "Paste";
+"全选" = "Select All";
+"选择模板…" = "Choose Template…";
+"管理我的模板…" = "Manage My Templates…";
+"唤起输入框" = "Show Prompt Editor";
+"停止 AI 操作" = "Stop AI Operation";
+"窗口" = "Window";
+"使用独立工作窗口" = "Use Workspace Window";
+"最小化" = "Minimize";
+"显示 %@" = "Show %@";
+"帮助" = "Help";
+"使用说明" = "Talis Guide";
+"返回快速浮窗" = "Return to Quick Panel";
+"全局 Prompt 输入框，支持结构化模板、占位符跳转和 AI 微调。" = "A global Prompt editor with reusable templates, placeholder navigation, and AI refinement.";
+"%@ 使用说明" = "%@ Guide";
+"官方接口" = "Official API";
+"国际站" = "International";
+"中国站" = "Mainland China";
+"本机订阅" = "Local Subscription";
+"本机共享" = "Local Shared";
+"腾讯混元" = "Tencent Hunyuan";
+"百度文心" = "Baidu ERNIE";
+"千帆 API" = "Qianfan API";
+"阿里通义" = "Alibaba Qwen";
+"字节豆包" = "ByteDance Doubao";
+"火山方舟" = "Volcengine Ark";
+"智谱 GLM" = "Zhipu GLM";
+"界面语言" = "Language";
+"把需求整理成Prompt" = "Turn a Request into a Prompt";
+"补齐目标、上下文、约束、输出格式和自检规则" = "Clarify the goal, context, constraints, output format, and review criteria";
+"准备会前材料" = "Prepare a Meeting Brief";
+"整理背景、争议点、待决事项和主持人口播摘要" = "Organize background, open questions, decisions, and a host summary";
+"假设清单与验证优先级" = "Assumptions and Validation Priorities";
+"找出影响方案成败的假设，安排验证顺序" = "Identify decision-critical assumptions and plan their validation";
+"发布与交付前检查" = "Pre-release Review";
+"检查发布前的问题，给出风险等级、发布建议和检查项" = "Find release issues, assess their risks, and plan checks";
+"内容选题池生成" = "Build a Content Topic Pool";
+"把零散想法聚类为栏目、选题、形式和先发顺序" = "Group ideas into series, topics, formats, and a publishing order";
+"Prompt 防注入加固" = "Harden a Prompt Against Injection";
+"从注入、越权、误答和信息泄露角度加固Prompt" = "Review injection, unauthorized actions, false answers, and information disclosure";
+"长文翻译" = "Long-form Translation";
+"保留结构、术语表、语气与译后校对" = "Preserve structure, terminology, and tone, then proofread";
+"工单分流与路由规则" = "Ticket Triage and Routing";
+"把工单样本转成分类、优先级和团队路由规则" = "Turn ticket samples into categories, priorities, and routing rules";
+"文稿润色模板" = "Prose Editing";
+"保留原意，理顺表达并删除空话" = "Preserve the meaning, improve clarity, and remove empty language";
+"代码审查模板" = "Code Review";
+"按真实风险优先级输出问题、位置和修复建议" = "Prioritize findings by risk, with locations and suggested fixes";
+"开发" = "Development";
+"研究归纳模板" = "Research Synthesis";
+"把碎片资料整理为结论、证据和待验证假设" = "Organize research into conclusions, evidence, and open hypotheses";
+"写作搭档：整理创作需求" = "Writing Partner: Define the Brief";
+"探索表达方向，再交给写作工具" = "Explore the direction before drafting";
+"写作" = "Writing";
+"文稿编辑：限定改稿范围" = "Writing Editor: Set Revision Boundaries";
+"保留事实和作者立场，说明这次怎样改" = "Preserve facts and the author's position while defining the revision";
+"文本编辑" = "Editing";
+"PPT 文案：整理汇报简报" = "Presentation Writing: Define the Brief";
+"明确听众、决策和内容依据" = "Clarify the audience, decision, and supporting material";
+"演示" = "Presentation";
+"界面设计：整理设计简报" = "Interface Design: Define the Brief";
+"从用户任务、现状和约束开始设计" = "Start with user tasks, the current experience, and constraints";
+"设计" = "Design";
+"体验评审：明确检查范围" = "UX Review: Define the Scope";
+"带上真实界面和目标，获得可定位的问题" = "Use the actual interface and goals to get actionable findings";
+"评审" = "Review";
+"PPT 制作：交接确认稿" = "Presentation Production: Hand Off the Final Brief";
+"把确认内容和制作要求交给生产流程" = "Hand approved content and production requirements to the producer";
+"制作" = "Production";
+"资产研究：明确研究边界" = "Asset Research: Define the Scope";
+"说明研究对象、口径和待核实问题" = "Define the subject, assumptions, and unresolved questions";
+"研究" = "Research";
+"研究建站：交接研究成果" = "Research Website: Hand Off the Findings";
+"让已确认研究成为可阅读的实际网站" = "Turn confirmed research into a readable website";
+"建站" = "Website";
+"打开与编辑" = "Open and Edit";
+"打开与编辑\n%@：唤起输入框" = "Open and Edit\n%@: Show the Prompt editor";
+"⌘K：打开模板选择；空输入时也可按 /" = "⌘K: Choose a template; you can also press / in an empty editor";
+"菜单栏" = "Menu Bar";
+"模板选择" = "Template Selection";
+"AI 操作（按所选服务）" = "AI Actions (using the selected service)";
+"内容操作" = "Content Actions";
+"修改记录保留本次编辑的全部轮次，模型仅参考最近 3 轮。" = "Revision History retains every round in this editing session. The model only uses the latest 3 rounds as context.";
+"当前 Prompt 信息已经足够明确。
+
+没有发现会显著影响执行的问题。可以直接使用整理后的版本，或返回原文。" = "Your Prompt has enough detail.
+
+No missing information would significantly affect the result. Use the revised Prompt or return to your original text.";
+"打开与编辑
+%@：唤起输入框
+⌘K：打开模板选择；空输入时也可按 /
+Tab：跳到下一处占位符（有占位符时）
+⌘↵：复制 Prompt
+Esc：结束当前快速会话并收起；下次唤起为空白
+⌘N：保存当前会话到“上次草稿”，开始新 Prompt
+恢复上次草稿：存在可恢复内容时，从主界面、Prompt 菜单或状态栏菜单恢复最近一次正文与修改记录
+⌘Z：撤销，包括撤销清空
+⌘D：快速浮窗与独立工作窗口切换，正文与修改记录保留
+
+菜单栏
+单击 T：打开或收起 Talis
+右击 T：新建 Prompt、恢复上次草稿、修改记录、模板、设置与退出
+
+模板选择
+↑↓：选择模板
+↵：插入模板
+Tab：切换模板来源
+Esc：收起模板选择
+
+AI 操作（按所选服务）
+微调：保留原意与结构，调整表达
+重构：按当前需求重新组织内容
+追问：先补充关键信息，再生成Prompt
+停止或 ⌘.：停止等待，保留原文
+
+内容操作
+从“模板”菜单打开“模板中心”
+存为新模板：提取模板，预览后保存
+覆盖原模板：确认后写回来源模板
+清空当前内容：清空正文和修改记录，可撤销
+
+修改记录保留本次编辑的全部轮次，模型仅参考最近 3 轮。" = "Open and Edit
+%@: Show the Prompt editor
+⌘K: Choose a template; you can also press / in an empty editor
+Tab: Jump to the next placeholder, when present
+⌘↵: Copy the Prompt
+Esc: End and dismiss the current quick session; the next session starts blank
+⌘N: Save the current session as Last Draft and start a new Prompt
+Restore Last Draft: When available, restore the latest text and revision history from the editor, Prompt menu, or menu bar
+⌘Z: Undo, including clearing the editor
+⌘D: Switch between Quick Panel and Workspace Window without losing text or revision history
+
+Menu Bar
+Click T: Open or dismiss Talis
+Right-click T: New Prompt, Restore Last Draft, Revision History, Templates, Settings, and Quit
+
+Template Selection
+↑↓: Choose a template
+↵: Insert the selected template
+Tab: Switch template source
+Esc: Dismiss template selection
+
+AI Actions (using the selected service)
+Refine: Preserve the meaning and structure while improving the wording
+Rewrite: Reorganize the content for the current request
+Grill-me: Add key details before generating the Prompt
+Stop or ⌘.: Stop waiting and keep the original text
+
+Content Actions
+Open Template Center from the Templates menu
+Save as New Template: Create a template, preview it, then save
+Update Original Template: Confirm before replacing the source template
+Clear: Remove the current text and revision history. You can undo this action.
+
+Revision History retains every round in this editing session. The model only uses the latest 3 rounds as context.";
+"：唤起输入框" = ": Show the Prompt editor";
+"：打开模板选择；空输入时也可按 /" = ": Choose a template; you can also press / in an empty editor";
+"Tab：跳到下一处占位符（有占位符时）" = "Tab: Jump to the next placeholder, when present";
+"⌘↵：复制 Prompt" = "⌘↵: Copy the Prompt";
+"Esc：结束当前快速会话并收起；下次唤起为空白" = "Esc: End and dismiss the current quick session; the next session starts blank";
+"⌘N：保存当前会话到“上次草稿”，开始新 Prompt" = "⌘N: Save the current session as Last Draft and start a new Prompt";
+"恢复上次草稿：存在可恢复内容时，从主界面、Prompt 菜单或状态栏菜单恢复最近一次正文与修改记录" = "Restore Last Draft: When available, restore the latest text and revision history from the editor, Prompt menu, or menu bar";
+"⌘Z：撤销，包括撤销清空" = "⌘Z: Undo, including clearing the editor";
+"⌘D：快速浮窗与独立工作窗口切换，正文与修改记录保留" = "⌘D: Switch between Quick Panel and Workspace Window without losing text or revision history";
+"单击 T：打开或收起 Talis" = "Click T: Open or dismiss Talis";
+"右击 T：新建 Prompt、恢复上次草稿、修改记录、模板、设置与退出" = "Right-click T: New Prompt, Restore Last Draft, Revision History, Templates, Settings, and Quit";
+"↑↓：选择模板" = "↑↓: Choose a template";
+"↵：插入模板" = "↵: Insert the selected template";
+"Tab：切换模板来源" = "Tab: Switch template source";
+"Esc：收起模板选择" = "Esc: Dismiss template selection";
+"微调：保留原意与结构，调整表达" = "Refine: Preserve the meaning and structure while improving the wording";
+"重构：按当前需求重新组织内容" = "Rewrite: Reorganize the content for the current request";
+"追问：先补充关键信息，再生成Prompt" = "Grill-me: Add key details before generating the Prompt";
+"停止或 ⌘.：停止等待，保留原文" = "Stop or ⌘.: Stop waiting and keep the original text";
+"从“模板”菜单打开“模板中心”" = "Open Template Center from the Templates menu";
+"存为新模板：提取模板，预览后保存" = "Save as New Template: Create a template, preview it, then save";
+"覆盖原模板：确认后写回来源模板" = "Update Original Template: Confirm before replacing the source template";
+"清空当前内容：清空正文和修改记录，可撤销" = "Clear: Remove the current text and revision history. You can undo this action.";
+
+/*
+AppLocalization.redisplay handles generated labels by source text. These
+derived status keys keep their complete wording after a language round-trip.
+*/
+"正在微调…" = "Refining…";
+"正在重构…" = "Rewriting…";
+"正在微调" = "Refining";
+"正在重构" = "Rewriting";
+"微调失败" = "Refinement Failed";
+"重构失败" = "Rewrite Failed";
+"微调已完成" = "Refinement Complete";
+"重构已完成" = "Rewrite Complete";
+"追问 · 第 1 轮" = "Grill-me · Round 1";
+"追问 · 第 2 轮" = "Grill-me · Round 2";
+"追问 · 第 3 轮" = "Grill-me · Round 3";
+"追问 · 第 4 轮" = "Grill-me · Round 4";
+"追问 · 第 5 轮" = "Grill-me · Round 5";
+"追问 · 第 1 轮 · 问题 1/1" = "Grill-me · Round 1 · Question 1/1";
+"追问 · 第 1 轮 · 问题 1/2" = "Grill-me · Round 1 · Question 1/2";
+"追问 · 第 1 轮 · 问题 2/2" = "Grill-me · Round 1 · Question 2/2";
+"追问 · 第 1 轮 · 问题 1/3" = "Grill-me · Round 1 · Question 1/3";
+"追问 · 第 1 轮 · 问题 2/3" = "Grill-me · Round 1 · Question 2/3";
+"追问 · 第 1 轮 · 问题 3/3" = "Grill-me · Round 1 · Question 3/3";

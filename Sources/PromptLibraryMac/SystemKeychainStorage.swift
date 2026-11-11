@@ -1,5 +1,6 @@
 import Foundation
 import Security
+import LocalAuthentication
 import TalisCore
 
 struct SystemKeychainStorage: CredentialStorage {
@@ -22,6 +23,19 @@ struct SystemKeychainStorage: CredentialStorage {
             throw CredentialVaultError.verificationFailed
         }
         return value
+    }
+
+    func contains(account: String) throws -> Bool {
+        var request = query(account)
+        request[kSecReturnAttributes as String] = true
+        request[kSecMatchLimit as String] = kSecMatchLimitOne
+        let context = LAContext()
+        context.interactionNotAllowed = true
+        request[kSecUseAuthenticationContext as String] = context
+        let status = SecItemCopyMatching(request as CFDictionary, nil)
+        if status == errSecItemNotFound { return false }
+        guard status == errSecSuccess else { throw KeychainError.unhandledStatus(status) }
+        return true
     }
 
     func write(_ value: String, account: String) throws {
@@ -50,10 +64,10 @@ enum KeychainError: LocalizedError {
         switch self {
         case .unhandledStatus(let status):
             if status == errSecUserCanceled {
-                return "已取消 Keychain 授权，原密钥仍保留。需要时可以重新尝试。"
+                return L("已取消钥匙串授权，原密钥仍保留。需要时可以重新尝试。")
             }
-            let description = SecCopyErrorMessageString(status, nil) as String? ?? "未知错误"
-            return "无法访问 macOS Keychain（\(status)）：\(description)。请解锁登录钥匙串，并在系统提示中允许 Talis 访问后重试。"
+            let description = SecCopyErrorMessageString(status, nil) as String? ?? L("未知错误")
+            return AppLocalization.format("无法访问 macOS 钥匙串（%@）：%@。请解锁登录钥匙串，并在系统提示中允许 Talis 访问后重试。", status, description)
         }
     }
 }

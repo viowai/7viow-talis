@@ -1,0 +1,11 @@
+.build/
+dist/
+.DS_Store
+*.xcuserdata/
+DerivedData/
+talis-prompt-service/node_modules/
+talis-prompt-service/dist/
+talis-prompt-service/admin-dist/
+talis-prompt-service/.env
+.env
+.env.local

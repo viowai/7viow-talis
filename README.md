@@ -14,9 +14,11 @@ Talis 是 Mac 上随时可以唤起的 Prompt 工作台。写下想法，生成�
 
 ## 安装
 
-### 下载预构建 App
+### 用 DMG 安装
 
-从 [GitHub Releases](https://github.com/viowai/7viow-talis/releases/latest) 下载 `talis-v1.0.1-macos-arm64-build42.zip`。解压后把 `Talis.app` 移到“应用程序”。发布包支持 Apple Silicon 和 macOS 13 及以上，使用 ad-hoc 签名，未经过 Apple 公证；首次启动可能需要你在 Finder 中右键选择“打开”，再按 macOS 提示确认。若系统仍阻止启动，请使用下面的源码安装。
+下载 [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg)。打开磁盘映像，把 `Talis.app` 拖到「应用程序」，再从「应用程序」打开 Talis。需要 Apple Silicon 和 macOS 13 或更新版本。
+
+应用使用 ad-hoc 签名，未经 Apple 公证。如果首次打开时被 macOS 拦截，请先确认文件来自本仓库，再到「系统设置 → 隐私与安全性」选择「仍要打开」（如果系统提供该选项）。见 [Apple 的首次打开说明](https://support.apple.com/zh-cn/102445)。 也可以使用下方的源码安装方式。
 
 已构建 App 的最低系统版本为 macOS 13。源码构建需要 Xcode 26 或更新版本的开发工具，包含 macOS 26 SDK 或更新版本。当前验证覆盖 Apple Silicon，Intel 尚未验证。源码构建不需要付费 Apple Developer 会员。项目没有第三方 Swift Package 依赖。
 

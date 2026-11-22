@@ -6,11 +6,13 @@
 
 想交给 AI agent？使用[一句话安装指引](agent-install.md)。想自己安装？按下面三步操作。
 
-## 下载预构建 App
+## 用 DMG 安装
 
-从 [GitHub Releases](https://github.com/viowai/7viow-talis/releases/latest) 下载 `talis-v1.0.1-macos-arm64-build42.zip`，解压后把 `Talis.app` 移到“应用程序”。
+1. 下载 [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg)。升级前先保存正在编辑的文字并退出 Talis。
+2. 打开 DMG，把 `Talis.app` 拖到磁盘映像里的「应用程序」快捷方式，再从「应用程序」打开 Talis。
+3. 应用使用 ad-hoc 签名，未经 Apple 公证。如果首次打开时被 macOS 拦截，请先确认文件来自本仓库，再到「系统设置 → 隐私与安全性」选择「仍要打开」（如果系统提供该选项）。见 [Apple 的首次打开说明](https://support.apple.com/zh-cn/102445)。
 
-发布包使用 ad-hoc 签名，未经过 Apple 公证。若 macOS 阻止打开，在 Finder 中右键 `Talis.app`，选择“打开”，再按系统提示确认。系统仍阻止时，使用下面的源码安装。不要全局关闭 Gatekeeper。
+备用下载是 [应用 ZIP](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.zip)。解压后把 `Talis.app` 移到「应用程序」，首次启动使用相同的步骤。
 
 ## 从源码安装
 
@@ -75,7 +77,7 @@ bash scripts/build_desktop_app.sh
 | 已装开发工具但仍报错 | 查看 `xcode-select -p`、`swift --version` 和 `xcrun --sdk macosx --show-sdk-path`。修正工具选择，不反复安装 Talis |
 | 提示先退出 Talis | 保存或复制正在编辑的内容，正常退出后重试。安装器不会强制结束进程 |
 | 无权写入“应用程序” | 使用上面的 Finder 安装路径并完成系统确认 |
-| 下载 App 被 macOS 拦截 | 发布包使用 ad-hoc 签名，未经过 Apple 公证。在 Finder 中右键选择“打开”并确认提示；仍被阻止时使用源码构建。不要全局关闭 Gatekeeper |
+| 下载 App 被 macOS 拦截 | 见[用 DMG 安装](#用-dmg-安装)中的「仍要打开」。如果系统没有提供该选项，可[从源码安装](#从源码安装)。 |
 | App 打开但 AI 操作失败 | 从菜单检查当前供应商和 API Key。安装成功与模型账号可用是两个条件 |
 | `Option + Space` 没有唤起 | 从菜单栏或 Dock 打开 Talis；若提示“全局快捷键未启用”，记录错误码并检查其他工具是否占用同一组合键 |
 

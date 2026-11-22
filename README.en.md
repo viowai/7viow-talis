@@ -14,9 +14,11 @@ Consecutive revisions use the latest 3 rounds as context. Open **Revision Histor
 
 ## Install
 
-### Download the prebuilt app
+### Install from the DMG
 
-Download `talis-v1.0.1-macos-arm64-build42.zip` from [GitHub Releases](https://github.com/viowai/7viow-talis/releases/latest). Unzip it and move `Talis.app` to Applications. The release requires Apple Silicon and macOS 13 or later. It uses an ad-hoc signature and is not notarized by Apple. On first launch, macOS may ask you to open it from the context menu in Finder and confirm the prompt. If macOS still blocks it, use the source installation below.
+Download the [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg). Open the disk image, drag `Talis.app` to **Applications**, then open it from **Applications**. The app requires Apple Silicon and macOS 13 or later.
+
+The app is ad-hoc signed and is not notarized by Apple. If macOS blocks the first launch, confirm that you downloaded the app from this repository, then choose **Open Anyway** in **System Settings → Privacy & Security** if the option is available. See [Apple’s first-launch instructions](https://support.apple.com/en-us/102445). You can also build and install from source below.
 
 The built app requires macOS 13 or later. Building it requires Xcode 26 or later developer tools, including the macOS 26 SDK or later. Apple Silicon is currently verified; Intel and other Macs have not been verified. Building does not require a paid Apple Developer membership. Talis has no third-party Swift Package dependencies.
 

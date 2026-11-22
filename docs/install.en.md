@@ -6,11 +6,13 @@ This release provides a prebuilt app and a source installation. The prebuilt pac
 
 To hand installation to a local AI agent, use the [English agent installation guide](agent-install.en.md). To install yourself:
 
-## Download the Prebuilt App
+## Install from the DMG
 
-Download `talis-v1.0.1-macos-arm64-build42.zip` from [GitHub Releases](https://github.com/viowai/7viow-talis/releases/latest), then unzip it and move `Talis.app` to Applications.
+1. Download the [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg). When upgrading, save any text you are editing and quit Talis first.
+2. Open the DMG, drag `Talis.app` onto the **Applications** shortcut in the disk image, then open it from **Applications**.
+3. The app is ad-hoc signed and is not notarized by Apple. If macOS blocks the first launch, confirm that you downloaded the app from this repository, then choose **Open Anyway** in **System Settings → Privacy & Security** if the option is available. See [Apple’s first-launch instructions](https://support.apple.com/en-us/102445).
 
-The package uses an ad-hoc signature and is not notarized by Apple. If macOS blocks it, Control-click `Talis.app` in Finder, choose Open, and confirm the prompt. If macOS still blocks it, use the source installation below. Do not disable Gatekeeper globally.
+The [app ZIP](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.zip) is an alternate download. Unzip it, move `Talis.app` to **Applications**, and follow the same first-launch steps.
 
 ## Install from Source
 
@@ -79,7 +81,7 @@ The app is written to `~/Library/Caches/Talis/Build.noindex/desktop/Talis.app`. 
 | Tools appear installed but the build still fails | Check `xcode-select -p`, `swift --version`, and `xcrun --sdk macosx --show-sdk-path` |
 | The installer asks to quit Talis | Save or copy your text, quit normally, and retry. The installer does not force-quit the app |
 | Cannot write to Applications | Use the Finder path above |
-| Gatekeeper blocks a downloaded app | The release uses an ad-hoc signature and is not notarized by Apple. Open it from the context menu in Finder and confirm the prompt; use the source installation if it remains blocked. Do not disable Gatekeeper globally |
+| Gatekeeper blocks a downloaded app | See [Install from the DMG](#install-from-the-dmg) for macOS’s **Open Anyway** step. If unavailable, use [Install from Source](#install-from-source). |
 | The app opens but AI actions fail | Check the selected provider and key in Settings. Installation and service availability are separate conditions |
 | `Option + Space` does not show Talis | Open from the menu bar or Dock. If the app reports that the global shortcut is unavailable, check for a conflicting app and record the error code |
 

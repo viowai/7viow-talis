@@ -1,6 +1,6 @@
 <p align="center"><img src="Resources/AppIconSource.png" width="112" height="112" alt="Talis app icon"></p>
 
-[简体中文](README.md) | [English](README.en.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Português do Brasil](README.pt-BR.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [हिन्दी](README.hi.md)
 
 # Talis
 

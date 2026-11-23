@@ -14,7 +14,7 @@ enum AILocalSubscriptionCatalog {
     private static let cacheKey = "ai.local-subscriptions.catalog"
 
     static var cachedServices: [AILocalSubscriptionService] {
-        guard let data = UserDefaults.standard.data(forKey: cacheKey),
+        guard let data = AppIdentity.preferences.data(forKey: cacheKey),
               let services = try? JSONDecoder().decode([AILocalSubscriptionService].self, from: data),
               !services.isEmpty else {
             return fallbackServices
@@ -108,7 +108,7 @@ enum AILocalSubscriptionCatalog {
 
     static func save(_ services: [AILocalSubscriptionService]) {
         guard let data = try? JSONEncoder().encode(services) else { return }
-        UserDefaults.standard.set(data, forKey: cacheKey)
+        AppIdentity.preferences.set(data, forKey: cacheKey)
     }
 
     private static var fallbackServices: [AILocalSubscriptionService] {

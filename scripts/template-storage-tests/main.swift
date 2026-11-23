@@ -3,6 +3,7 @@ import Foundation
 // This test-owned identity isolates actual production storage in its own folder.
 struct AppIdentity {
     static let current = AppIdentity()
+    static let preferences = UserDefaults.standard
     let dataDirectoryName = "TalisStorageTests-\(UUID().uuidString).noindex"
     let isPreview = true
 }

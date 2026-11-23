@@ -5,10 +5,22 @@ import Carbon
 struct AppIdentity {
     static let current = AppIdentity(bundleIdentifier: Bundle.main.bundleIdentifier)
 
+    // Existing preferences and Keychain items have storage names independent of the app name.
+    let preferenceDomain: String?
+    static let preferences = current.preferenceDomain.flatMap { UserDefaults(suiteName: $0) } ?? .standard
+
     let isPreview: Bool
 
     init(bundleIdentifier: String?) {
-        isPreview = bundleIdentifier == "local.prompt-library.overlay.preview"
+        let bundleID = "ai.viow.talis"
+        let storageID = "local.prompt-library.overlay"
+        if let identifier = bundleIdentifier,
+           identifier == bundleID || identifier.hasPrefix(bundleID + ".") {
+            preferenceDomain = storageID + identifier.dropFirst(bundleID.count)
+        } else {
+            preferenceDomain = nil
+        }
+        isPreview = bundleIdentifier == bundleID + ".preview"
     }
 
     var displayName: String { "Talis" }

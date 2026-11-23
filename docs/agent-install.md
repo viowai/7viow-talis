@@ -63,7 +63,7 @@ bash scripts/install_app.sh && open /Applications/Talis.app
 
 ```bash
 codesign --verify --deep --strict /Applications/Talis.app
-pgrep -fl '^/Applications/Talis.app/Contents/MacOS/PromptLibraryMac$'
+pgrep -fl '^/Applications/Talis.app/Contents/MacOS/Talis$'
 ```
 
 本地临时签名验证不等于 Apple 公证。进程存在也不等于所有功能正常：能查看界面时确认窗口能打开。不能查看时，明确请用户从“应用程序”打开确认。

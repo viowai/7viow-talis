@@ -5,16 +5,16 @@ enum AppSettings {
 
     static var modelID: String {
         get {
-            let saved = UserDefaults.standard.string(forKey: modelKey) ?? ""
+            let saved = AppIdentity.preferences.string(forKey: modelKey) ?? ""
             if !saved.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return saved }
             if let configured = AppConfigFile.modelID, !configured.isEmpty { return configured }
             return OpenAIClient.defaultModelID
         }
-        set { UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: modelKey) }
+        set { AppIdentity.preferences.set(newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: modelKey) }
     }
 
     static func endpoint(for provider: AIProvider) -> URL {
-        if let saved = UserDefaults.standard.string(forKey: "ai.endpoint.\(provider.id)"),
+        if let saved = AppIdentity.preferences.string(forKey: "ai.endpoint.\(provider.id)"),
            let url = URL(string: saved),
            (url.scheme == "https" && url.host != nil)
             || (!provider.requiresAPIKey && url.scheme == "http" && ["127.0.0.1", "localhost", "::1"].contains(url.host ?? "")) {
@@ -24,7 +24,7 @@ enum AppSettings {
     }
 
     static func setEndpoint(_ url: URL, providerID: String) {
-        UserDefaults.standard.set(url.absoluteString, forKey: "ai.endpoint.\(providerID)")
+        AppIdentity.preferences.set(url.absoluteString, forKey: "ai.endpoint.\(providerID)")
     }
 
     static var modelOption: OpenAIClient.ModelOption {

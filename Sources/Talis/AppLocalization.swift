@@ -24,10 +24,10 @@ enum AppLocalization {
 
     static var preference: AppLanguage {
         get {
-            AppLanguage(rawValue: UserDefaults.standard.string(forKey: preferenceKey) ?? "") ?? .system
+            AppLanguage(rawValue: AppIdentity.preferences.string(forKey: preferenceKey) ?? "") ?? .system
         }
         set {
-            UserDefaults.standard.set(newValue.rawValue, forKey: preferenceKey)
+            AppIdentity.preferences.set(newValue.rawValue, forKey: preferenceKey)
             NotificationCenter.default.post(name: didChangeNotification, object: nil)
         }
     }

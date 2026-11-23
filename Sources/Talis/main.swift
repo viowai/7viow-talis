@@ -4778,8 +4778,8 @@ if CommandLine.arguments.contains("--configure-openai-from-env") {
             throw CredentialVaultError.verificationFailed
         }
         AppSettings.modelID = "openai"
-        UserDefaults.standard.set("https://api.openai.com/v1", forKey: "ai.endpoint.openai")
-        UserDefaults.standard.synchronize()
+        AppIdentity.preferences.set("https://api.openai.com/v1", forKey: "ai.endpoint.openai")
+        AppIdentity.preferences.synchronize()
         print("Configured OpenAI: \(OpenAIClient.modelOption(for: "openai").model); Keychain verified.")
         exit(0)
     } catch {

@@ -14,7 +14,7 @@ Les révisions successives utilisent les 3 derniers tours comme contexte. Ouvrez
 
 ### Installer depuis le DMG
 
-Téléchargez [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg). Ouvrez l’image disque, faites glisser `Talis.app` vers **Applications**, puis lancez l’app depuis ce dossier. Talis nécessite un Mac Apple Silicon et macOS 13 ou ultérieur.
+Téléchargez [Talis v1.0.2 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.2/talis-v1.0.2-macos-arm64-build43.dmg). Ouvrez l’image disque, faites glisser `Talis.app` vers **Applications**, puis lancez l’app depuis ce dossier. Talis nécessite un Mac Apple Silicon et macOS 13 ou ultérieur.
 
 L’app est signée ad hoc et n’a pas été notariée par Apple. Si macOS bloque le premier lancement, vérifiez que le téléchargement provient de ce dépôt et, si l’option est proposée, choisissez **Ouvrir quand même** dans **Réglages Système → Confidentialité et sécurité**. Consultez les [instructions d’Apple pour le premier lancement](https://support.apple.com/en-us/102445).
 

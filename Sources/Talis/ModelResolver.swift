@@ -6,7 +6,7 @@ enum ModelDiscoveryError: Error {
 }
 
 actor ModelResolver {
-    static let shared = ModelResolver(defaults: .standard)
+    static let shared = ModelResolver(defaults: AppIdentity.preferences)
     private struct Entry: Codable {
         var model: String
         var attemptedAt: Date

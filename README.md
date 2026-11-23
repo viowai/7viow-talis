@@ -12,7 +12,7 @@ Talis is an open-source prompt editor for Mac. Press `Option + Space` to open it
 
 [See the five steps of the Talis v1.0.0 launch example](https://viow.ai/work/talis/en/).
 
-Current source version: `1.0.1` (Build 42).
+Current source version: `1.0.2` (Build 43).
 
 Consecutive revisions use the latest 3 rounds as context. Open **Revision History** to review inputs and results from the current session. Use **Clear** in the editor to start a new task.
 
@@ -20,7 +20,7 @@ Consecutive revisions use the latest 3 rounds as context. Open **Revision Histor
 
 ### Install from the DMG
 
-Download the [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg). Open the disk image, drag `Talis.app` to **Applications**, then open it from **Applications**. The app requires Apple Silicon and macOS 13 or later.
+Download the [Talis v1.0.2 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.2/talis-v1.0.2-macos-arm64-build43.dmg). Open the disk image, drag `Talis.app` to **Applications**, then open it from **Applications**. The app requires Apple Silicon and macOS 13 or later.
 
 The app is ad-hoc signed and is not notarized by Apple. If macOS blocks the first launch, confirm that you downloaded the app from this repository, then choose **Open Anyway** in **System Settings → Privacy & Security** if the option is available. See [Apple’s first-launch instructions](https://support.apple.com/en-us/102445). You can also build and install from source below.
 

@@ -19,7 +19,7 @@ if [[ ! -w /Applications ]]; then
   echo "当前用户不能写入 /Applications。请在 Finder 中移动构建好的 Talis.app，并完成系统管理员确认。" >&2
   exit 1
 fi
-if pgrep -f '^/Applications/Talis\.app/Contents/MacOS/PromptLibraryMac( |$)' >/dev/null; then
+if pgrep -f '^/Applications/Talis\.app/Contents/MacOS/(Talis|PromptLibraryMac)( |$)' >/dev/null; then
   echo "请先退出 Talis，保留需要的编辑内容后再安装。" >&2
   exit 1
 fi

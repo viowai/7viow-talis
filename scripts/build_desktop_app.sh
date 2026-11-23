@@ -11,12 +11,12 @@ MACOS_SDK_VERSION="$(xcrun --sdk macosx --show-sdk-version)"
 cd "$ROOT_DIR"
 swift build -c release --disable-sandbox --build-system native --sdk "$MACOS_SDK_PATH" --scratch-path "$CACHE_DIR/swift"
 BIN_DIR="$(swift build -c release --disable-sandbox --build-system native --sdk "$MACOS_SDK_PATH" --scratch-path "$CACHE_DIR/swift" --show-bin-path)"
-bash "$ROOT_DIR/scripts/check_macos_sdk.sh" "$BIN_DIR/PromptLibraryMac" "$MACOS_SDK_VERSION"
+bash "$ROOT_DIR/scripts/check_macos_sdk.sh" "$BIN_DIR/Talis" "$MACOS_SDK_VERSION"
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources"
-cp "$BIN_DIR/PromptLibraryMac" "$APP_DIR/Contents/MacOS/PromptLibraryMac"
-strip -S -x "$APP_DIR/Contents/MacOS/PromptLibraryMac"
-if /usr/bin/strings "$APP_DIR/Contents/MacOS/PromptLibraryMac" | /usr/bin/grep -F -e "$HOME/" -e "$ROOT_DIR/" >/dev/null; then
+cp "$BIN_DIR/Talis" "$APP_DIR/Contents/MacOS/Talis"
+strip -S -x "$APP_DIR/Contents/MacOS/Talis"
+if /usr/bin/strings "$APP_DIR/Contents/MacOS/Talis" | /usr/bin/grep -F -e "$HOME/" -e "$ROOT_DIR/" >/dev/null; then
   echo "构建产物仍含本机源路径，停止打包。" >&2
   exit 1
 fi
@@ -26,7 +26,7 @@ bash scripts/build_mode_icons.sh "$APP_DIR/Contents/Resources"
 ditto Resources/Fonts "$APP_DIR/Contents/Resources/Fonts"
 ditto Resources/en.lproj "$APP_DIR/Contents/Resources/en.lproj"
 cp LICENSE NOTICE THIRD-PARTY-NOTICES.md "$APP_DIR/Contents/Resources/"
-chmod +x "$APP_DIR/Contents/MacOS/PromptLibraryMac"
+chmod +x "$APP_DIR/Contents/MacOS/Talis"
 xattr -cr "$APP_DIR"
 codesign --force --deep --sign - "$APP_DIR"
 codesign --verify --deep --strict "$APP_DIR"

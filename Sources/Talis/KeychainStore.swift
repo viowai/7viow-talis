@@ -2,7 +2,7 @@ import Foundation
 import TalisCore
 
 final class AppLegacyCredentials: LegacyCredentialSource {
-    private let defaults = UserDefaults.standard
+    private let defaults = AppIdentity.preferences
     private let keychain: SystemKeychainStorage
     private let completionKey = "ai.credentials-migrated.v1"
     private let ownerKey = "ai.legacy-key-provider"

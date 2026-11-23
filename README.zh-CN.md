@@ -12,7 +12,7 @@ Talis 是 Mac 上的开源 Prompt 编辑器。按 `Option + Space` 唤起，先�
 
 [在官网看 Talis v1.0.0 发布案例的五步演示](https://viow.ai/work/talis/)。
 
-当前源码版本：`1.0.1`（Build 42）。
+当前源码版本：`1.0.2`（Build 43）。
 
 连续修改会结合最近 3 轮上下文。打开“修改记录”可在独立窗口回看输入与结果；开始新任务时，用内容区的“清空”按钮。
 
@@ -20,7 +20,7 @@ Talis 是 Mac 上的开源 Prompt 编辑器。按 `Option + Space` 唤起，先�
 
 ### 用 DMG 安装
 
-下载 [Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg)。打开磁盘映像，把 `Talis.app` 拖到「应用程序」，再从「应用程序」打开 Talis。需要 Apple Silicon 和 macOS 13 或更新版本。
+下载 [Talis v1.0.2 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.2/talis-v1.0.2-macos-arm64-build43.dmg)。打开磁盘映像，把 `Talis.app` 拖到「应用程序」，再从「应用程序」打开 Talis。需要 Apple Silicon 和 macOS 13 或更新版本。
 
 应用使用 ad-hoc 签名，未经 Apple 公证。如果首次打开时被 macOS 拦截，请先确认文件来自本仓库，再到「系统设置 → 隐私与安全性」选择「仍要打开」（如果系统提供该选项）。见 [Apple 的首次打开说明](https://support.apple.com/zh-cn/102445)。 也可以使用下方的源码安装方式。
 

@@ -4,17 +4,17 @@ import ScreenCaptureKit
 import TalisCore
 
 setbuf(stdout, nil)
-let originalAppLanguage = UserDefaults.standard.string(forKey: "app.language")
-UserDefaults.standard.set("zh-Hans", forKey: "app.language")
+let originalAppLanguage = AppIdentity.preferences.string(forKey: "app.language")
+AppIdentity.preferences.set("zh-Hans", forKey: "app.language")
 
 let clipboardSnapshot = NSPasteboard.general.pasteboardItems?.map { item in
     Dictionary(uniqueKeysWithValues: item.types.compactMap { type in item.data(forType: type).map { (type, $0) } })
 } ?? []
 func restoreClipboard() {
     if let originalAppLanguage {
-        UserDefaults.standard.set(originalAppLanguage, forKey: "app.language")
+        AppIdentity.preferences.set(originalAppLanguage, forKey: "app.language")
     } else {
-        UserDefaults.standard.removeObject(forKey: "app.language")
+        AppIdentity.preferences.removeObject(forKey: "app.language")
     }
     let items = clipboardSnapshot.map { values -> NSPasteboardItem in
         let item = NSPasteboardItem()
@@ -1926,16 +1926,16 @@ expect(localServices.first(where: { $0.owner == "kimi-work" })?.chatReasoningEff
        && localServices.first(where: { $0.owner == "deepseek" })?.chatReasoningEffort == nil,
        "local services only request a reasoning level their catalog actually supports")
 let catalogDefaultsKey = "ai.local-subscriptions.catalog"
-let oldCatalogData = UserDefaults.standard.data(forKey: catalogDefaultsKey)
-UserDefaults.standard.set(Data("""
+let oldCatalogData = AppIdentity.preferences.data(forKey: catalogDefaultsKey)
+AppIdentity.preferences.set(Data("""
 [{"owner":"kimi-work","displayName":"Kimi Work","providerID":"local-subscription-kimi-work","modelID":"kimi-work/k3d1-agent","usesResponsesAPI":false}]
 """.utf8), forKey: catalogDefaultsKey)
 expect(AILocalSubscriptionCatalog.cachedServices.first?.chatReasoningEffort == nil,
        "an existing cached subscription catalog upgrades without losing services")
 if let oldCatalogData {
-    UserDefaults.standard.set(oldCatalogData, forKey: catalogDefaultsKey)
+    AppIdentity.preferences.set(oldCatalogData, forKey: catalogDefaultsKey)
 } else {
-    UserDefaults.standard.removeObject(forKey: catalogDefaultsKey)
+    AppIdentity.preferences.removeObject(forKey: catalogDefaultsKey)
 }
 AILocalSubscriptionCatalog.save(localServices)
 let previousLocalModelID = AppSettings.modelID
@@ -1946,9 +1946,9 @@ expect(AppSettings.modelOption.id == localOpenAIProvider.id
        "a selected local shared service survives the model-option boundary")
 AppSettings.modelID = previousLocalModelID
 if let oldCatalogData {
-    UserDefaults.standard.set(oldCatalogData, forKey: catalogDefaultsKey)
+    AppIdentity.preferences.set(oldCatalogData, forKey: catalogDefaultsKey)
 } else {
-    UserDefaults.standard.removeObject(forKey: catalogDefaultsKey)
+    AppIdentity.preferences.removeObject(forKey: catalogDefaultsKey)
 }
 authModes.selectedSegment = 0
 triggerAction(authModes)
@@ -1956,14 +1956,14 @@ expect(providers.numberOfItems == 12 && providers.titleOfSelectedItem == "DeepSe
        "switching back restores the complete API-key provider group")
 let codexProvider = AIProvider.find(AIProvider.codexSubscriptionID)!
 let endpointKey = "ai.endpoint.\(AIProvider.codexSubscriptionID)"
-let previousSubscriptionEndpoint = UserDefaults.standard.string(forKey: endpointKey)
+let previousSubscriptionEndpoint = AppIdentity.preferences.string(forKey: endpointKey)
 AppSettings.setEndpoint(URL(string: "http://127.0.0.1:3425/v1")!, providerID: codexProvider.id)
 expect(AppSettings.endpoint(for: codexProvider).absoluteString == "http://127.0.0.1:3425/v1",
        "the subscription provider may save its loopback HTTP endpoint")
 if let previousSubscriptionEndpoint {
-    UserDefaults.standard.set(previousSubscriptionEndpoint, forKey: endpointKey)
+    AppIdentity.preferences.set(previousSubscriptionEndpoint, forKey: endpointKey)
 } else {
-    UserDefaults.standard.removeObject(forKey: endpointKey)
+    AppIdentity.preferences.removeObject(forKey: endpointKey)
 }
 
 var presencePending: [String: CheckedContinuation<Bool, Error>] = [:]
@@ -2242,7 +2242,7 @@ func verifyLocalization() {
     expect(controller.canCancelAI && stopTitle?.action != nil,
            "Chinese busy state exposes the stop action; \(stopDescription)")
     AppLocalization.preference = .english
-    expect(AppLocalization.preference == .english && UserDefaults.standard.string(forKey: "app.language") == "en", "English selection is persisted")
+    expect(AppLocalization.preference == .english && AppIdentity.preferences.string(forKey: "app.language") == "en", "English selection is persisted")
     let englishUpdated = UserPromptTemplate(
         id: UUID(),
         title: "Badge Probe",
@@ -2795,13 +2795,13 @@ func runUIReview() {
     app.run()
 }
 func captureSettingsSnapshot(to url: URL) -> Bool {
-    let previousModel = UserDefaults.standard.string(forKey: "ai.model")
-    UserDefaults.standard.set("deepseek", forKey: "ai.model")
+    let previousModel = AppIdentity.preferences.string(forKey: "ai.model")
+    AppIdentity.preferences.set("deepseek", forKey: "ai.model")
     defer {
         if let previousModel {
-            UserDefaults.standard.set(previousModel, forKey: "ai.model")
+            AppIdentity.preferences.set(previousModel, forKey: "ai.model")
         } else {
-            UserDefaults.standard.removeObject(forKey: "ai.model")
+            AppIdentity.preferences.removeObject(forKey: "ai.model")
         }
     }
     let settings = SettingsWindowController(keyPresence: { _ in true })

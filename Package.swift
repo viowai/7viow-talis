@@ -3,12 +3,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "PromptLibraryMac",
+    name: "Talis",
     platforms: [
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "PromptLibraryMac", targets: ["PromptLibraryMac"])
+        .executable(name: "Talis", targets: ["Talis"])
     ],
     targets: [
         .target(
@@ -16,9 +16,9 @@ let package = Package(
             path: "Sources/TalisCore"
         ),
         .executableTarget(
-            name: "PromptLibraryMac",
+            name: "Talis",
             dependencies: ["TalisCore"],
-            path: "Sources/PromptLibraryMac"
+            path: "Sources/Talis"
         ),
         .testTarget(
             name: "TalisCoreTests",

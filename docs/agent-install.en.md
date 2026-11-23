@@ -60,7 +60,7 @@ After installation, run:
 
 ```bash
 codesign --verify --deep --strict /Applications/Talis.app
-pgrep -fl '^/Applications/Talis.app/Contents/MacOS/PromptLibraryMac$'
+pgrep -fl '^/Applications/Talis.app/Contents/MacOS/Talis$'
 ```
 
 An ad-hoc signature check is not Apple notarization. A running process does not prove every feature works. If the agent can see the GUI, confirm that the window opens. Otherwise ask the user to open it from Applications.

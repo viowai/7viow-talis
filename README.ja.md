@@ -14,7 +14,7 @@ TalisはmacOS向けのPromptワークスペースです。アイデアを書き�
 
 ### DMGからインストール
 
-[Talis v1.0.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.1/talis-v1.0.1-macos-arm64-build42.dmg)をダウンロードします。ディスクイメージを開き、`Talis.app`を**アプリケーション**へドラッグして、そこから起動します。Apple Silicon搭載MacとmacOS 13以降が必要です。
+[Talis v1.0.2 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.2/talis-v1.0.2-macos-arm64-build43.dmg)をダウンロードします。ディスクイメージを開き、`Talis.app`を**アプリケーション**へドラッグして、そこから起動します。Apple Silicon搭載MacとmacOS 13以降が必要です。
 
 アプリはad-hoc署名で、Appleによる公証は受けていません。初回起動をmacOSに止められた場合は、このリポジトリからダウンロードしたことを確認し、選択肢が表示される場合は**システム設定 → プライバシーとセキュリティ**で**このまま開く**を選びます。[Appleの初回起動手順](https://support.apple.com/en-us/102445)も参照してください。
 

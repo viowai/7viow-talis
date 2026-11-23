@@ -8,7 +8,7 @@
 
 Talis 是 Mac 上的开源 Prompt 编辑器。按 `Option + Space` 唤起，先把想法写下来。缺细节就追问，内容零散就重构，想改其中一段就选中微调。改好后复制到常用的 AI 工具。反复用到的请求可以存成个人模板。
 
-![Talis 编辑器里的 v1.0.0 发布草稿](https://viow.ai/additions/talis/assets/launch-story-draft-zh.webp)
+<p align="left"><a href="https://viow.ai/work/talis/"><img src="https://viow.ai/additions/talis/assets/launch-story-draft-zh.webp" width="480" alt="Talis 编辑器里的 v1.0.0 发布草稿"></a></p>
 
 [在官网看 Talis v1.0.0 发布案例的五步演示](https://viow.ai/work/talis/)。
 

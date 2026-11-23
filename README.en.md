@@ -8,7 +8,7 @@
 
 Talis is an open-source prompt editor for Mac. Press `Option + Space` to open it and jot down an idea. Use Grill-me to fill in missing details, Rewrite to organize a draft, or Refine to edit a selected passage. Then copy the prompt into the AI tool you already use. Save recurring requests as personal templates.
 
-![The Talis editor with the draft launch plan for Talis v1.0.0](https://viow.ai/additions/talis/assets/launch-story-draft-en.webp)
+<p align="left"><a href="https://viow.ai/work/talis/en/"><img src="https://viow.ai/additions/talis/assets/launch-story-draft-en.webp" width="480" alt="The Talis editor with the draft launch plan for Talis v1.0.0"></a></p>
 
 [See the five steps of the Talis v1.0.0 launch example](https://viow.ai/work/talis/en/).
 

@@ -8,9 +8,9 @@
 
 Talis is an open-source prompt editor for Mac. Press `Option + Space` to open it and jot down an idea. Use Grill-me to fill in missing details, Rewrite to organize a draft, or Refine to edit a selected passage. Then copy the prompt into the AI tool you already use. Save recurring requests as personal templates.
 
-![The Talis editor with a rough invitation for a neighborhood book swap](https://viow.ai/additions/talis/assets/workflow-draft-en.webp)
+![The Talis editor with the draft launch plan for Talis v1.0.0](https://viow.ai/additions/talis/assets/launch-story-draft-en.webp)
 
-[See the book swap example on the Talis website](https://viow.ai/work/talis/en/).
+[See the five steps of the Talis v1.0.0 launch example](https://viow.ai/work/talis/en/).
 
 Current source version: `1.0.1` (Build 42).
 
@@ -50,13 +50,13 @@ If Apple developer tools are missing, run `xcode-select --install` and complete 
 
 Press `Option + Space` and try this draft:
 
-> Help me write an invitation for a neighborhood book swap. Each person brings one book and takes a different one home. Leave the date and location for the organizer to fill in.
+> I’m getting Talis v1.0.0 ready for GitHub and viow.ai. Help me check the version, features and release channels before publishing. Prepare the announcement in Chinese and English, and make that the rule for future releases. Plan posts and videos for Xiaohongshu, X and WeChat Moments.
 
 You can edit the draft and press `Command + Return` to copy it without setting up an AI service. To try the workflow shown on the website, open **AI Service Settings** from the gear button. Choose **API Key** or **Subscription**, select a service and region, then save.
 
-1. **Grill-me** asks who the invitation is for. Choose an answer, write your own, or skip the question.
-2. **Rewrite** organizes the draft into a prompt with a goal, requirements, and an output format.
-3. **Refine** edits a selected passage, such as the line that explains how to leave the date and location open.
+1. **Grill-me** asks which sources to use for the pre-launch review. Choose the product and version details you’ll supply.
+2. **Rewrite** organizes the brief into three tasks: verify the release, draft the bilingual announcement, and plan social media assets.
+3. **Refine** tightens the review requirement. Ask for the full review package and require your approval before publishing.
 4. **Copy Prompt** puts the result on the clipboard. Press `Command + Return`, then paste it into your AI tool.
 
 Use any of the three editing actions on its own. The result stays editable.

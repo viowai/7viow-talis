@@ -8,9 +8,9 @@
 
 Talis 是 Mac 上的开源 Prompt 编辑器。按 `Option + Space` 唤起，先把想法写下来。缺细节就追问，内容零散就重构，想改其中一段就选中微调。改好后复制到常用的 AI 工具。反复用到的请求可以存成个人模板。
 
-![Talis 编辑器里是一份社区换书邀请的草稿](https://viow.ai/additions/talis/assets/workflow-draft-zh.webp)
+![Talis 编辑器里的 v1.0.0 发布草稿](https://viow.ai/additions/talis/assets/launch-story-draft-zh.webp)
 
-[在 Talis 官网看完整的换书邀请示例](https://viow.ai/work/talis/)。
+[在官网看 Talis v1.0.0 发布案例的五步演示](https://viow.ai/work/talis/)。
 
 当前源码版本：`1.0.1`（Build 42）。
 
@@ -50,13 +50,13 @@ bash scripts/install_app.sh && open /Applications/Talis.app
 
 按 `Option + Space` 唤起 Talis，试着输入这份草稿。
 
-> 帮我写一份社区换书活动的邀请。每人带来一本书，再换一本带回家。日期和地点留给组织者填写。
+> 我准备把 Talis v1.0.0 发到 GitHub 和 viow.ai。发布前先帮我核对版本、产品功能和发布渠道。发布文案要有中英文，以后也沿用这个规则。再给小红书、X 和朋友圈规划图文和视频。
 
 编辑草稿和按 `Command + Return` 复制都无需配置 AI 服务。想跟着官网体验完整流程，点击右上角齿轮打开「AI 服务设置」，选择「API Key」或「订阅共享」，选好服务和区域后保存。
 
-1. **追问**会问这份邀请写给谁。可以选择答案、自己填写或跳过。
-2. **重构**把草稿整理成一份写清目标、要求和输出格式的 Prompt。
-3. **微调**修改选中的一段，比如交代如何给日期和地点留空的那句。
+1. **追问**先问用什么资料复核版本与产品信息。选择以自己提供的资料为准。
+2. **重构**把草稿整理成三个任务：复核发布信息、准备双语文案、规划社媒素材。
+3. **微调**把复核条件写清楚：先交完整复核包，等你确认后再发布。
 4. **复制 Prompt**把结果放进剪贴板。按 `Command + Return`，再粘贴到常用的 AI 工具。
 
 三种编辑操作可以单独使用，结果也可以继续编辑。

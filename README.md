@@ -4,11 +4,15 @@
 
 # Talis
 
-Write clearly. Then hand it to AI.
+**Tired of writing prompts? You haven’t tried Talis.**
+
+Talis is an open-source prompt editor for Mac. Press `Option + Space` to open it and jot down an idea. Use Grill-me to fill in missing details, Rewrite to organize a draft, or Refine to edit a selected passage. Then copy the prompt into the AI tool you already use. Save recurring requests as personal templates.
+
+![The Talis editor with a rough invitation for a neighborhood book swap](https://viow.ai/additions/talis/assets/workflow-draft-en.webp)
+
+[See the book swap example on the Talis website](https://viow.ai/work/talis/en/).
 
 Current source version: `1.0.1` (Build 42).
-
-Talis is a macOS Prompt workspace that is ready when you need it. Write an idea, create a Prompt you can keep editing, then copy it into the AI tool you already use. Add Grill-me questions when key details are missing, or save recurring requirements as personal templates.
 
 Consecutive revisions use the latest 3 rounds as context. Open **Revision History** to review inputs and results from the current session. Use **Clear** in the editor to start a new task.
 
@@ -44,14 +48,18 @@ If Apple developer tools are missing, run `xcode-select --install` and complete 
 
 ## First Use
 
-Start with an edit-and-copy flow that does not require an API key:
+Press `Option + Space` and try this draft:
 
-1. Open Talis and press `Option + Space`.
-2. Enter this example, press `Command + Return` to copy it, then paste it into your preferred AI tool.
+> Help me write an invitation for a neighborhood book swap. Each person brings one book and takes a different one home. Leave the date and location for the organizer to fill in.
 
-> Write an 80-word introduction to a Pomodoro app for university students. It runs only on macOS and supports a 25-minute timer plus pause and resume. Do not add features that were not provided.
+You can edit the draft and press `Command + Return` to copy it without setting up an AI service. To try the workflow shown on the website, open **AI Service Settings** from the gear button. Choose **API Key** or **Subscription**, select a service and region, then save.
 
-To use Talis for revision, open **AI Service Settings** from the gear button. Choose **API Key** or **Subscription**, select a service and region, then save. Return to the editor and choose **Refine**, **Rewrite**, or **Grill-me**. The result remains editable. Use **Copy Prompt Cmd+Return** when you are ready.
+1. **Grill-me** asks who the invitation is for. Choose an answer, write your own, or skip the question.
+2. **Rewrite** organizes the draft into a prompt with a goal, requirements, and an output format.
+3. **Refine** edits a selected passage, such as the line that explains how to leave the date and location open.
+4. **Copy Prompt** puts the result on the clipboard. Press `Command + Return`, then paste it into your AI tool.
+
+Use any of the three editing actions on its own. The result stays editable.
 
 **Revision History** opens in a separate window. Open **Template Center** from the **Templates** menu to save a personal template or update its source template. Use the explicit **Apply** or **Replace** action; selecting a card does not apply it. Template replacement can be undone with `Command + Z`.
 

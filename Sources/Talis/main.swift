@@ -1576,6 +1576,12 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         let context: [ConversationTurn]
     }
     private struct ConversationTurn: Equatable {
+        let id = UUID()
+        var startedAt: Date? = nil
+        var revisionBefore: String? {
+            if AppLocalization.original(actionTitle) == "追问" { return clarificationSession?.originalQuery }
+            return query
+        }
         let query: String
         let result: String
         let actionTitle: String
@@ -1607,8 +1613,18 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     private var contentMenuWidthConstraint: NSLayoutConstraint?
     private var templatePickerWindow: NSWindow?
     private let placeholderHint = NSTextField(labelWithString: L("【】标记和正文均可编辑\n按 Tab 跳到下一处"))
+    private var hasPlaceholderTokens = false
     private let placeholderHintContainer = ThemedSurfaceView()
     private let editorSeparator = NSBox()
+    private let revisionScroll = HistoryScrollView()
+    private let readingView = RevisionReadingView()
+    private let revisionButton = NSButton()
+    private let revisionLabel = NSTextField(labelWithString: "")
+    private var pendingDifference: UUID?
+    private var draftOrigin = NSPoint.zero
+    private var readingOrigin = NSPoint.zero
+    private var previousRevisionID: UUID?
+    private var viewedRevisions = Set<UUID>()
     private let clearButton = NSButton(title: L("清空"), target: nil, action: nil)
     private var isShowingCopySuccess = false
     private let settingsButton = NSButton()
@@ -1641,6 +1657,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     private let templatePreviewFactory: (TemplateDraft) -> TemplatePreviewWindowController
     private let contextSummaryButton = NSButton(title: "", target: nil, action: nil)
     private let restoreDraftButton = NSButton(title: L("恢复上次草稿"), target: nil, action: nil)
+    private var clarificationStartedAt = Date()
     private let historyController = HistoryWindowController()
     private let scrollView = NSScrollView()
     private let editorSurface = ThemedSurfaceView()
@@ -1804,6 +1821,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func showWorkspace() {
+        closeRevision()
         if startsNewSessionOnNextShow {
             beginFreshSession()
             startsNewSessionOnNextShow = false
@@ -1908,6 +1926,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func restoreQuickPanel() {
+        closeRevision()
         guard let panel = super.window as? PromptPanel else { return }
         super.window?.orderOut(nil)
         isWorkspaceMode = false
@@ -1954,6 +1973,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func focusCurrentWorkspace() {
+        if !revisionScroll.isHidden { window?.makeFirstResponder(readingView); return }
         if pendingClarificationRound != nil { clarificationWindowController?.focusAnswer() }
         else { window?.makeFirstResponder(textView) }
     }
@@ -2010,6 +2030,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func endCurrentSessionAndHide() {
+        closeRevision()
         if clarificationSession != nil {
             resetClarification(dismissWindow: true)
         }
@@ -2027,6 +2048,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func beginFreshSession() {
+        viewedRevisions.removeAll()
         commandMenuVisible = false
         pendingTemplateMatch = nil
         ignoredTemplateTitles.removeAll()
@@ -2062,6 +2084,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func cancelActiveAIWithoutFeedback() {
+        endStreamPreview()
         activeOperationID = nil
         activeOperationTitle = ""
         waitingFeedbackWorkItem?.cancel()
@@ -2192,7 +2215,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         clearButton.font = AppTheme.regular(12)
         clearButton.target = self; clearButton.action = #selector(clearInput)
         clearButton.toolTip = L("清空正文与修改记录；可按 ⌘Z 撤销")
-        for view in [placeholderHintContainer, objectSpacer, clearButton] {
+        for view in [placeholderHintContainer, objectSpacer, revisionLabel, revisionButton, clearButton] {
             editorToolbar.addArrangedSubview(view)
         }
         editorFooter.translatesAutoresizingMaskIntoConstraints = false
@@ -2313,6 +2336,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
 
         contentStack.addArrangedSubview(topBar)
         contentStack.setCustomSpacing(20, after: topBar)
+        configureRevisionView()
         contentStack.addArrangedSubview(editorSurface)
         rootView.addSubview(contentStack)
     }
@@ -2591,10 +2615,6 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         for view in [spacer, commitButton, stopButton] { actionsContainer.addArrangedSubview(view) }
         contentStack.addArrangedSubview(actionsContainer)
         feedbackContainer.isHidden = true
-        feedbackContainer.orientation = .horizontal
-        feedbackContainer.spacing = 8
-        feedbackContainer.alignment = .centerY
-        feedbackContainer.detachesHiddenViews = true
         feedbackContainer.translatesAutoresizingMaskIntoConstraints = false
         actionsLabel.font = AppTheme.semibold(15)
         actionsLabel.textColor = AppTheme.secondaryTextColor
@@ -2632,15 +2652,13 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         feedbackHeaderStack.addArrangedSubview(actionsLabel)
         feedbackTextStack.orientation = .vertical
         feedbackTextStack.alignment = .leading
+        feedbackTextStack.detachesHiddenViews = true
+        feedbackTextStack.setHuggingPriority(.required, for: .vertical)
         feedbackTextStack.spacing = 2
         feedbackTextStack.addArrangedSubview(feedbackHeaderStack)
         feedbackTextStack.addArrangedSubview(feedbackMessageLabel)
-        feedbackHeaderStack.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        feedbackTextStack.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        feedbackTextStack.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         feedbackMessageLabel.leadingAnchor.constraint(equalTo: actionsLabel.leadingAnchor).isActive = true
-        // The flexible spacer consumes leftover room; the visible status must
-        // retain its intrinsic width when a running view is shown again.
+        feedbackHeaderStack.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         feedbackTextStack.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         feedbackTextStack.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         activityIndicator.style = .spinning
@@ -2678,11 +2696,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         feedbackActions.alignment = .centerY
         feedbackActions.setContentHuggingPriority(.required, for: .horizontal)
         feedbackSymbol.isHidden = true
-        let feedbackSpacer = NSView()
-        feedbackSpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        for view in [feedbackTextStack, feedbackSpacer, feedbackActions] {
-            feedbackContainer.addArrangedSubview(view)
-        }
+        feedbackContainer.install(text: feedbackTextStack, actions: feedbackActions)
         contentStack.insertArrangedSubview(feedbackContainer, at: 1)
         setAIControlsEnabled(true)
     }
@@ -2767,11 +2781,11 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
 
     private func resizeWindowForContent(animated: Bool) {
         guard !clarificationIsActive, let window else { return }
+        feedbackHeightConstraint?.constant = feedbackHeight
         if isWorkspaceMode {
             updateWorkspaceLayout()
             return
         }
-        feedbackHeightConstraint?.constant = feedbackHeight
         let editorHeight = editorHeightConstraint?.constant ?? 34
         let secondaryHeight = normalSecondaryHeight
         let desiredHeight = editorHeight + 104 + editorFooterHeight + (!shouldShowFeedback ? 0 : feedbackHeight + 12) + (secondaryHeight > 0 ? secondaryHeight + 12 : 0)
@@ -2844,15 +2858,21 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         manageTemplatesButton.isHidden = false
     }
 
+    private var toolbarHeight: CGFloat {
+        if hasPlaceholderTokens { return AppTheme.editorToolbarHeight }
+        return latestChangedTurn == nil ? 24 : 32
+    }
+
     private var editorFooterHeight: CGFloat {
-        guard !textView.string.isEmpty else { return 0 }
-        return (placeholderHintContainer.isHidden ? 24 : AppTheme.editorToolbarHeight) + 37
+        guard !textView.string.isEmpty || latestChangedTurn != nil else { return 0 }
+        return toolbarHeight + 37
     }
 
     private func updateEditorFooter() {
         editorFooter.isHidden = editorFooterHeight == 0
         editorFooterHeightConstraint?.constant = editorFooterHeight
-        editorToolbarHeightConstraint?.constant = placeholderHintContainer.isHidden ? 24 : AppTheme.editorToolbarHeight
+        editorToolbarHeightConstraint?.constant = toolbarHeight
+        placeholderHintContainer.isHidden = !hasPlaceholderTokens || !revisionScroll.isHidden || isRunningAI || clarificationIsActive
     }
 
     private func updatePlaceholderVisibility() {
@@ -2878,7 +2898,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
                 .foregroundColor: token.isFilled ? AppTheme.secondaryTextColor : AppTheme.placeholderTextColor
             ], forCharacterRange: token.range)
         }
-        placeholderHintContainer.isHidden = tokens.isEmpty
+        hasPlaceholderTokens = !tokens.isEmpty
         updateEditorFooter()
         textView.needsDisplay = true
         updateEditorOverlays()
@@ -2908,7 +2928,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func updateEditorOverlays() {
-        guard !updatingEditorOverlays else { return }
+        guard revisionScroll.isHidden, !updatingEditorOverlays else { return }
         updatingEditorOverlays = true
         defer { updatingEditorOverlays = false }
         let tokens = navigator.tokens(in: textView.string)
@@ -2994,6 +3014,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func applyEditorSnapshot(_ snapshot: EditorSnapshot, actionName: String, registersUndo: Bool = true) {
+        closeRevision()
         if registersUndo {
             registerEditorUndoStep()
         }
@@ -3224,7 +3245,158 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         adjustEditorHeight(animated: animated)
     }
 
+    private var latestChangedTurn: ConversationTurn? {
+        conversationTurns.last { turn in
+            guard let before = turn.revisionBefore else { return false }
+            return before != turn.result
+        }
+    }
+
+    private func configureRevisionView() {
+        revisionButton.setButtonType(.toggle)
+        revisionButton.bezelStyle = .regularSquare
+        revisionButton.isBordered = false
+        revisionButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        revisionButton.image = RevisionDifference.buttonIcon
+        revisionButton.imagePosition = .imageOnly
+        revisionButton.target = self
+        revisionButton.action = #selector(toggleRevision)
+        revisionButton.setAccessibilityLabel(L("查看本轮变化"))
+        revisionButton.toolTip = L("查看本轮变化")
+        revisionButton.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        revisionLabel.font = AppTheme.regular(12)
+        revisionLabel.textColor = AppTheme.accentTextColor
+        revisionLabel.alignment = .right
+        revisionLabel.lineBreakMode = .byTruncatingTail
+        revisionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        revisionLabel.isHidden = true
+        revisionScroll.isHidden = true
+        revisionScroll.translatesAutoresizingMaskIntoConstraints = false
+        revisionScroll.hasVerticalScroller = true
+        revisionScroll.autohidesScrollers = true
+        revisionScroll.drawsBackground = false
+        readingView.drawsBackground = false
+        readingView.isEditable = false
+        readingView.isSelectable = true
+        readingView.configureHistoryWrapping()
+        readingView.textContainerInset = textView.textContainerInset
+        readingView.setAccessibilityLabel(L("本轮修改前后对比"))
+        readingView.handleShortcut = { [weak self] key, shifted in
+            guard let self, !self.isRunningAI else { return }
+            if key == 36 { self.performPasteBack(); return }
+            self.closeRevision()
+            if shifted { self.performEditorRedo() } else { self.performEditorUndo() }
+        }
+        readingView.returnToDraft = { [weak self] in
+            guard let self else { return }
+            if self.streamPreviewVisible { self.stopAI() } else { self.closeRevision() }
+        }
+        revisionScroll.documentView = readingView
+        editorSurface.addSubview(revisionScroll)
+        NSLayoutConstraint.activate([
+            revisionScroll.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            revisionScroll.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            revisionScroll.leadingAnchor.constraint(equalTo: editorSurface.leadingAnchor),
+            revisionScroll.trailingAnchor.constraint(equalTo: editorSurface.trailingAnchor)
+        ])
+    }
+
+    private func updateRevisionNotice() {
+        guard pendingDifference == nil, revisionScroll.isHidden else { return }
+        guard !isRunningAI, !clarificationIsActive, let turn = latestChangedTurn else {
+            revisionLabel.stringValue = ""
+            revisionLabel.isHidden = true
+            return
+        }
+        let edited = textView.string != turn.result
+        revisionLabel.stringValue = edited ? L("已手动编辑") : AppLocalization.format("%@已完成，可继续编辑", AppLocalization.redisplay(turn.actionTitle))
+        revisionLabel.textColor = edited ? AppTheme.secondaryTextColor : AppTheme.accentTextColor
+        revisionLabel.toolTip = revisionLabel.stringValue
+        revisionLabel.isHidden = false
+    }
+
+    @objc private func toggleRevision() {
+        guard revisionScroll.isHidden && pendingDifference == nil else { closeRevision(); return }
+        guard let turn = latestChangedTurn, let before = turn.revisionBefore, !isRunningAI, !clarificationIsActive else { return }
+        if textView.hasMarkedText() { textView.unmarkText() }
+        if before.utf8.count + turn.result.utf8.count > 16000 {
+            pendingDifference = turn.id
+            revisionButton.state = .on
+            revisionLabel.stringValue = L("正在整理变化…")
+            revisionLabel.toolTip = revisionLabel.stringValue
+            revisionLabel.isHidden = false
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                let delta = RevisionDifference(before: before, after: turn.result)
+                DispatchQueue.main.async {
+                    guard let self, self.pendingDifference == turn.id, self.latestChangedTurn?.id == turn.id else { return }
+                    self.pendingDifference = nil
+                    self.displayRevision(delta, turn: turn)
+                }
+            }
+        } else {
+            displayRevision(RevisionDifference(before: before, after: turn.result), turn: turn)
+        }
+    }
+
+    private func displayRevision(_ delta: RevisionDifference, turn: ConversationTurn) {
+        let (formatted, first) = delta.rendered()
+        readingView.textStorage?.setAttributedString(formatted)
+        revisionLabel.stringValue = delta.summary + (turn.result != textView.string ? " · " + L("当前稿另有手动修改") : "")
+        revisionLabel.isHidden = false
+        revisionLabel.toolTip = revisionLabel.stringValue
+        revisionLabel.textColor = AppTheme.accentTextColor
+        draftOrigin = scrollView.contentView.bounds.origin
+        viewedRevisions.insert(turn.id)
+        scrollView.isHidden = true
+        revisionScroll.isHidden = false
+        updateEditorFooter()
+        clearButton.isEnabled = false
+        placeholderMinimap.isHidden = true
+        scrollToTopButton.isHidden = true
+        revisionButton.state = .on
+        revisionButton.contentTintColor = AppTheme.accentTextColor
+        revisionButton.toolTip = L("关闭对比，继续编辑")
+        window?.makeFirstResponder(readingView)
+        revisionScroll.layoutSubtreeIfNeeded()
+        if previousRevisionID == turn.id {
+            revisionScroll.contentView.scroll(to: readingOrigin)
+        } else {
+            readingView.scrollRangeToVisible(first)
+        }
+        previousRevisionID = turn.id
+    }
+
+    private func closeRevision() {
+        endStreamPreview()
+        if pendingDifference != nil {
+            pendingDifference = nil
+            revisionButton.state = .off
+            updateRevisionNotice()
+        }
+        guard !revisionScroll.isHidden else { return }
+        readingOrigin = revisionScroll.contentView.bounds.origin
+        revisionScroll.isHidden = true
+        scrollView.isHidden = false
+        revisionButton.state = .off
+        revisionButton.contentTintColor = AppTheme.secondaryTextColor
+        revisionButton.toolTip = L("查看本轮变化")
+        clearButton.isEnabled = !isRunningAI && !clarificationIsActive && (!textView.string.isEmpty || !conversationTurns.isEmpty)
+        updateEditorFooter()
+        updateRevisionNotice()
+        window?.makeFirstResponder(textView)
+        scrollView.contentView.scroll(to: draftOrigin)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+        updateEditorOverlays()
+    }
+
     private func updateContextHistoryVisibility() {
+        updateRevisionNotice()
+        let changed = latestChangedTurn
+        revisionButton.isHidden = changed == nil
+        if revisionScroll.isHidden {
+            revisionButton.contentTintColor = changed.map { viewedRevisions.contains($0.id) } == true ? AppTheme.secondaryTextColor : AppTheme.accentTextColor
+        }
+
         restoreDraftButton.isHidden = !canRestoreLastDraft
         restoreDraftButton.isEnabled = canRestoreLastDraft
         contextSummaryButton.isHidden = conversationTurns.isEmpty
@@ -3414,10 +3586,10 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         }
     }
 
-    private func appendConversationTurn(query: String, result: String, actionTitle: String,
+    private func appendConversationTurn(query: String, result: String, actionTitle: String, startedAt: Date,
                                         clarificationSession: ClarificationSession? = nil) {
         conversationTurns.append(ConversationTurn(
-            query: query,
+            startedAt: startedAt, query: query,
             result: result,
             actionTitle: actionTitle,
             createdAt: Date(),
@@ -3444,6 +3616,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func startClarification() {
+        closeRevision()
         guard !isRunningAI, !clarificationIsActive else { return }
         let input = textView.string
         guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -3452,6 +3625,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         }
         guard let client = configuredClient() else { return }
 
+        clarificationStartedAt = Date()
         let session = ClarificationSession(originalQuery: input)
         let runID = UUID()
         let sheet = ClarificationWindowController()
@@ -3639,9 +3813,9 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
             ),
             actionName: L("追问")
         )
-        appendConversationTurn(query: historyQuery, result: finalPrompt, actionTitle: L("追问"), clarificationSession: session)
+        appendConversationTurn(query: historyQuery, result: finalPrompt, actionTitle: L("追问"), startedAt: clarificationStartedAt, clarificationSession: session)
         highlightFirstPlaceholder()
-        AppTheme.announce(L("追问已完成"), from: rootView)
+        AppTheme.announce(session.originalQuery == finalPrompt ? L("追问已完成") : AppLocalization.format("%@已完成，可继续编辑", L("追问")), from: rootView)
         updateSecondaryVisibility(animated: true)
     }
 
@@ -3719,15 +3893,55 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         window?.makeFirstResponder(textView)
     }
 
+    private var streamPreviewVisible = false
+
+    private func previewStream(_ text: String, operationID: UUID) {
+        guard activeOperationID == operationID, isRunningAI else { return }
+        if !streamPreviewVisible {
+            draftOrigin = scrollView.contentView.bounds.origin
+            streamPreviewVisible = true
+            waitingFeedbackWorkItem?.cancel()
+            let wasShowingDetail = !feedbackMessageLabel.isHidden
+            feedbackMessageLabel.stringValue = ""
+            feedbackMessageLabel.isHidden = true
+            if wasShowingDetail { resizeWindowForContent(animated: false) }
+            scrollView.isHidden = true
+            revisionScroll.isHidden = false
+            placeholderMinimap.isHidden = true
+            scrollToTopButton.isHidden = true
+            readingView.textStorage?.setAttributedString(NSAttributedString(string: ""))
+            readingView.typingAttributes = [.font: AppTheme.regular(15), .foregroundColor: NSColor.labelColor]
+            readingView.setAccessibilityLabel(L("正在生成的正文"))
+            revisionScroll.contentView.scroll(to: .zero)
+        }
+        readingView.string = text
+    }
+
+    private func endStreamPreview() {
+        guard streamPreviewVisible else { return }
+        let restoreEditorFocus = window?.firstResponder === readingView
+        streamPreviewVisible = false
+        revisionScroll.isHidden = true
+        scrollView.isHidden = false
+        readingView.setAccessibilityLabel(L("本轮修改前后对比"))
+        if restoreEditorFocus { window?.makeFirstResponder(textView) }
+        scrollView.contentView.scroll(to: draftOrigin)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+        updateEditorOverlays()
+    }
+
     private func runAIAction(_ action: AIAction) {
         guard !isRunningAI, !clarificationIsActive else { return }
         let input = textView.string
         guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let client = configuredClient() else { return }
         let inheritedContext = aiContextTurns()
+        let startedAt = Date()
         let operationID = beginAI(title: action.runningTitle)
         activeAITask = Task { [weak self] in
             do {
-                let output = try await client.run(action: action, input: input, context: inheritedContext)
+                let output = try await client.run(action: action, input: input, context: inheritedContext) { [weak self] text in
+                    self?.previewStream(text, operationID: operationID)
+                }
                 await MainActor.run {
                     guard let self, self.finishAI(operationID) else { return }
                     self.applyEditorSnapshot(
@@ -3735,9 +3949,9 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
                                             selectedRange: NSRange(location: 0, length: 0)),
                         actionName: action.buttonTitle
                     )
-                    self.appendConversationTurn(query: input, result: output, actionTitle: action.buttonTitle)
+                    self.appendConversationTurn(query: input, result: output, actionTitle: action.buttonTitle, startedAt: startedAt)
                     self.highlightFirstPlaceholder()
-                    AppTheme.announce(action.completedTitle, from: self.rootView)
+                    AppTheme.announce(input == output ? action.completedTitle : AppLocalization.format("%@已完成，可继续编辑", action.buttonTitle), from: self.rootView)
                     self.updateSecondaryVisibility(animated: true)
                 }
             } catch {
@@ -3781,6 +3995,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     private func beginAI(title: String) -> UUID {
+        closeRevision()
         let id = UUID()
         activeOperationID = id
         activeOperationTitle = title
@@ -3801,6 +4016,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
             self.feedbackMessageLabel.stringValue = L("等待 AI 响应…")
             self.feedbackMessageLabel.textColor = AppTheme.accentTextColor
             self.feedbackMessageLabel.isHidden = false
+            self.resizeWindowForContent(animated: false)
         }
         waitingFeedbackWorkItem = waiting
         DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: waiting)
@@ -3812,6 +4028,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
 
     private func finishAI(_ id: UUID) -> Bool {
         guard activeOperationID == id else { return false }
+        endStreamPreview()
         activeOperationID = nil
         activeOperationTitle = ""
         waitingFeedbackWorkItem?.cancel()
@@ -3826,6 +4043,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
     }
 
     @objc private func stopAI() {
+        endStreamPreview()
         guard isRunningAI || clarificationIsActive else { return }
         let interruptedRound = isRunningAI && pendingClarificationRound != nil ? clarificationSession : nil
         activeOperationID = nil
@@ -3937,6 +4155,7 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
         let hasInput = !textView.string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasResult = !conversationTurns.isEmpty
         let mayEdit = enabled && !clarificationIsActive
+        updateRevisionNotice()
         saveTemplateButton.isEnabled = mayEdit && hasInput
         updateTemplateButton.isEnabled = mayEdit && hasInput
         for button in [refineButton, regenerateButton, clarifyButton] {
@@ -3944,7 +4163,9 @@ final class PromptWindowController: NSWindowController, NSTextViewDelegate, Prom
             button.setEmphasis(.neutral)
             button.refreshAppearance()
         }
-        clearButton.isEnabled = mayEdit && (!textView.string.isEmpty || hasResult)
+        revisionButton.isEnabled = mayEdit
+        clearButton.isEnabled = mayEdit && revisionScroll.isHidden && (!textView.string.isEmpty || hasResult)
+        updateEditorFooter()
         contentMenuButton.isEnabled = mayEdit
         commitButton.isEnabled = enabled && !clarificationIsActive && !textView.string.isEmpty
         commitButton.setEmphasis(hasResult ? .primary : .neutral)

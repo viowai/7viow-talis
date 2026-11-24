@@ -50,5 +50,5 @@ with open(sys.argv[1],"wb") as f:
 PYINFO
   bash "$ROOT_DIR/scripts/build_brand_assets.sh" "$TEST_APP/Contents/Resources"
   ditto "$ROOT_DIR/Resources/en.lproj" "$TEST_APP/Contents/Resources/en.lproj"
-  "$TEST_APP/Contents/MacOS/ui-tests"
+  "$TEST_APP/Contents/MacOS/ui-tests" "$@"
 fi

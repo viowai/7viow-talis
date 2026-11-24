@@ -479,14 +479,29 @@ final class WindowContentView: ThemedSurfaceView {
 }
 
 /// One visible feedback channel for running, failure and interruption states.
-final class FeedbackStackView: NSStackView {
+final class FeedbackStackView: NSView {
     enum Tone { case working, error, neutral }
-    var tone: Tone = .neutral { didSet { needsDisplay = true } }
+    var tone: Tone = .neutral {
+        didSet { if tone != oldValue { needsDisplay = true } }
+    }
+
+    func install(text: NSStackView, actions: NSStackView) {
+        for view in [text, actions] {
+            view.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(view)
+        }
+        NSLayoutConstraint.activate([
+            text.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            text.centerYAnchor.constraint(equalTo: centerYAnchor),
+            actions.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            actions.leadingAnchor.constraint(greaterThanOrEqualTo: text.trailingAnchor, constant: 8),
+            actions.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
+    }
     override init(frame: NSRect) {
         super.init(frame: frame)
         wantsLayer = true
         layer?.cornerRadius = 12
-        edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func updateLayer() {

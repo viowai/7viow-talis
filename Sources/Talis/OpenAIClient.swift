@@ -1,4 +1,5 @@
 import Foundation
+import os
 import TalisCore
 
 enum AIAction {
@@ -65,6 +66,20 @@ struct AIContextTurn {
     let result: String
 }
 
+private struct RequestTiming {
+    let id = UUID().uuidString
+    let started = ProcessInfo.processInfo.systemUptime
+    let action: String
+    let provider: String
+    static let log = Logger(subsystem: "ai.viow.talis", category: "request-timing")
+    @TaskLocal static var current: RequestTiming?
+
+    func mark(_ phase: String, model: String = "") {
+        let ms = Int((ProcessInfo.processInfo.systemUptime - started) * 1000)
+        Self.log.info("id=\(id, privacy: .public) action=\(action, privacy: .public) provider=\(provider, privacy: .public) model=\(model, privacy: .public) phase=\(phase, privacy: .public) elapsed_ms=\(ms)")
+    }
+}
+
 struct OpenAIClient {
     struct ModelOption: Equatable {
         let id: String
@@ -106,7 +121,7 @@ struct OpenAIClient {
         self.operationTimeout = operationTimeout
     }
 
-    func run(action: AIAction, input: String, context: [AIContextTurn] = []) async throws -> String {
+    func run(action: AIAction, input: String, context: [AIContextTurn] = [], preview: (@MainActor @Sendable (String) -> Void)? = nil) async throws -> String {
         let sourceInput = input
         guard !sourceInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw AIClientError.emptyInput
@@ -115,18 +130,23 @@ struct OpenAIClient {
         let responseLanguage: TalisContentLanguage = AppLocalization.isEnglish
             ? .english
             : .simplifiedChinese
-        let text = try await send(
-            system: action.instruction + "\n\n" + ClarificationPromptBuilder.contentLanguageInstruction(responseLanguage),
-            user: Self.contextualUserContent(input: sourceInput, context: context)
-        )
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw AIClientError.emptyResponse
+        return try await measured(String(describing: action)) {
+            let text = try await self.send(
+                system: action.instruction + "\n\n" + ClarificationPromptBuilder.contentLanguageInstruction(responseLanguage),
+                user: Self.contextualUserContent(input: sourceInput, context: context),
+                preview: preview
+            )
+            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                throw AIClientError.emptyResponse
+            }
+            return text
         }
-        return text
     }
 
     func runClarification(session: ClarificationSession) async throws -> ClarificationDecision {
-        try await withDeadline { try await self.clarificationDecision(session: session) }
+        try await measured("clarify-evaluation-\(session.completedRounds + 1)") {
+            try await self.withDeadline { try await self.clarificationDecision(session: session) }
+        }
     }
 
     private func clarificationDecision(session: ClarificationSession) async throws -> ClarificationDecision {
@@ -150,6 +170,7 @@ struct OpenAIClient {
             let retryReminder = responseLanguage == .english
                 ? "The previous response incorrectly continued asking questions. Return the final Prompt now with status final."
                 : "上一次响应错误地继续提问。请立即返回 status 为 final 的最终 Prompt。"
+            RequestTiming.current?.mark("force-final-retry")
             let retryText = try await sendWithoutDeadline(
                 system: ClarificationPromptBuilder.systemInstruction(
                     forceFinal: true,
@@ -185,6 +206,7 @@ struct OpenAIClient {
             return .final(finalPrompt)
         }
 
+        RequestTiming.current?.mark("structure-repair")
         let repairText = try await sendWithoutDeadline(
             system: ClarificationPromptBuilder.structureRepairInstruction(
                 responseLanguage: AppLocalization.isEnglish ? .english : .simplifiedChinese
@@ -252,6 +274,21 @@ struct OpenAIClient {
         ), originalInput: sourceInput)
     }
 
+    private func measured<T>(_ action: String, _ body: () async throws -> T) async throws -> T {
+        let timing = RequestTiming(action: action, provider: modelOption.id)
+        return try await RequestTiming.$current.withValue(timing) {
+            timing.mark("start")
+            do {
+                let result = try await body()
+                timing.mark("complete")
+                return result
+            } catch {
+                timing.mark("error-\((error as NSError).code)")
+                throw error
+            }
+        }
+    }
+
     private func withDeadline<T: Sendable>(_ operation: @escaping @Sendable () async throws -> T) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             group.addTask { try await operation() }
@@ -264,16 +301,19 @@ struct OpenAIClient {
         }
     }
 
-    private func send(system: String, user: String) async throws -> String {
-        try await withDeadline { try await self.sendWithoutDeadline(system: system, user: user) }
+    private func send(system: String, user: String, preview: (@MainActor @Sendable (String) -> Void)? = nil) async throws -> String {
+        try await withDeadline { try await self.sendWithoutDeadline(system: system, user: user, preview: preview) }
     }
 
-    private func sendWithoutDeadline(system: String, user: String) async throws -> String {
+    private func sendWithoutDeadline(system: String, user: String, preview: (@MainActor @Sendable (String) -> Void)? = nil) async throws -> String {
+        RequestTiming.current?.mark("resolve-start")
         let model = try await modelResolver.resolve(option: modelOption, apiKey: apiKey, session: urlSession)
+        RequestTiming.current?.mark("resolve-end", model: model)
         do {
-            return try await send(model: model, system: system, user: user)
+            return try await send(model: model, system: system, user: user, preview: preview)
         } catch let failure as AIHTTPFailure {
             if failure.isUnavailableModel {
+                RequestTiming.current?.mark("resolve-replacement", model: model)
                 let replacement: String?
                 do {
                     replacement = try await modelResolver.resolve(option: modelOption, apiKey: apiKey, session: urlSession, excluding: model)
@@ -282,7 +322,8 @@ struct OpenAIClient {
                     replacement = nil
                 }
                 if let replacement, replacement != model {
-                    do { return try await send(model: replacement, system: system, user: user) }
+                    RequestTiming.current?.mark("retry-replacement", model: replacement)
+                    do { return try await send(model: replacement, system: system, user: user, preview: preview) }
                     catch let retry as AIHTTPFailure { throw AIClientError.requestFailed(retry.message) }
                 }
             }
@@ -290,16 +331,18 @@ struct OpenAIClient {
         }
     }
 
-    private func send(model: String, system: String, user: String) async throws -> String {
+    private func send(model: String, system: String, user: String, preview: (@MainActor @Sendable (String) -> Void)? = nil) async throws -> String {
         let provider = AIProvider.find(modelOption.id)
         let anthropic = provider?.apiProtocol == .anthropicMessages
         let responses = provider?.apiProtocol == .openAIResponses
+        let streamChat = modelOption.id == "local-subscription-zcode"
+            && provider?.apiProtocol == .chatCompletions && preview != nil
         let endpoint = anthropic ? "messages" : responses ? "responses" : "chat/completions"
         var request = URLRequest(url: modelOption.baseURL.appendingPathComponent(endpoint))
         request.httpMethod = "POST"
         ModelResolver.authorize(&request, provider: provider, apiKey: apiKey)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if responses { request.setValue("text/event-stream", forHTTPHeaderField: "Accept") }
+        if responses || streamChat { request.setValue("text/event-stream", forHTTPHeaderField: "Accept") }
         request.timeoutInterval = 60
 
         var payload: [String: Any]
@@ -322,7 +365,7 @@ struct OpenAIClient {
                     ["role": "system", "content": system],
                     ["role": "user", "content": user]
                 ],
-                "stream": false
+                "stream": streamChat
             ]
         }
         if anthropic {
@@ -340,10 +383,16 @@ struct OpenAIClient {
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        if responses {
-            return try await sendResponsesStream(request: request)
+        RequestTiming.current?.mark("post", model: model)
+        if responses || streamChat {
+            let (bytes, http) = try await openStream(request)
+            if streamChat {
+                return try await readChatStream(bytes, response: http, preview: preview)
+            }
+            return try await readResponsesStream(bytes, status: http.statusCode, preview: preview)
         }
         let (data, response) = try await urlSession.data(for: request)
+        RequestTiming.current?.mark("response-body")
         if let httpResponse = response as? HTTPURLResponse, !(200..<300).contains(httpResponse.statusCode) {
             throw httpFailure(data: data, status: httpResponse.statusCode)
         }
@@ -354,8 +403,9 @@ struct OpenAIClient {
         return text
     }
 
-    private func sendResponsesStream(request: URLRequest) async throws -> String {
+    private func openStream(_ request: URLRequest) async throws -> (URLSession.AsyncBytes, HTTPURLResponse) {
         let (bytes, response) = try await urlSession.bytes(for: request)
+        RequestTiming.current?.mark("response-headers")
         guard let httpResponse = response as? HTTPURLResponse else {
             throw ModelDiscoveryError.invalidResponse
         }
@@ -367,7 +417,71 @@ struct OpenAIClient {
             throw httpFailure(data: data, status: httpResponse.statusCode)
         }
 
-        var deltaText = ""
+        return (bytes, httpResponse)
+    }
+
+    private struct StreamingText {
+        var text = ""
+        var nextPreviewAt = 0.0
+
+        mutating func append(_ delta: String, preview: (@MainActor @Sendable (String) -> Void)?) async {
+            guard !delta.isEmpty else { return }
+            if text.isEmpty { RequestTiming.current?.mark("first-delta") }
+            text += delta
+            let now = ProcessInfo.processInfo.systemUptime
+            if let preview, now >= nextPreviewAt {
+                await preview(text)
+                nextPreviewAt = now + 0.1
+            }
+        }
+    }
+
+    private func readChatStream(_ bytes: URLSession.AsyncBytes, response: HTTPURLResponse,
+                                preview: (@MainActor @Sendable (String) -> Void)?) async throws -> String {
+        // Gateways may answer a streaming request with one ordinary completion.
+        if response.mimeType == "application/json" {
+            var data = Data()
+            for try await byte in bytes { data.append(byte) }
+            RequestTiming.current?.mark("response-body")
+            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            if json?["error"] != nil { throw httpFailure(data: data, status: response.statusCode) }
+            let choice = (json?["choices"] as? [[String: Any]])?.first
+            if let reason = choice?["finish_reason"] as? String, reason != "stop" { throw AIClientError.incompleteResponse }
+            guard let text = Self.extractOutputText(from: data) else { throw AIClientError.emptyResponse }
+            return text
+        }
+
+        var output = StreamingText()
+        var stopped = false
+        for try await line in bytes.lines {
+            try Task.checkCancellation()
+            guard line.hasPrefix("data:") else { continue }
+            let raw = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
+            if raw == "[DONE]" {
+                guard stopped else { throw AIClientError.incompleteResponse }
+                RequestTiming.current?.mark("stream-completed")
+                return output.text
+            }
+            let data = Data(raw.utf8)
+            guard let event = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw AIClientError.incompleteResponse
+            }
+            if event["error"] != nil { throw httpFailure(data: data, status: response.statusCode) }
+            guard let choice = (event["choices"] as? [[String: Any]])?.first else { continue }
+            if let delta = choice["delta"] as? [String: Any], let content = delta["content"] as? String {
+                await output.append(content, preview: preview)
+            }
+            if let reason = choice["finish_reason"] as? String {
+                guard reason == "stop" else { throw AIClientError.incompleteResponse }
+                stopped = true
+            }
+        }
+        throw AIClientError.incompleteResponse
+    }
+
+    private func readResponsesStream(_ bytes: URLSession.AsyncBytes, status: Int,
+                                     preview: (@MainActor @Sendable (String) -> Void)?) async throws -> String {
+        var output = StreamingText()
         var doneText: String?
         for try await line in bytes.lines {
             try Task.checkCancellation()
@@ -379,15 +493,18 @@ struct OpenAIClient {
                   let type = event["type"] as? String else { continue }
             switch type {
             case "response.output_text.delta":
-                if let delta = event["delta"] as? String { deltaText += delta }
+                if let delta = event["delta"] as? String {
+                    await output.append(delta, preview: preview)
+                }
             case "response.output_text.done":
                 doneText = event["text"] as? String
             case "response.completed":
+                RequestTiming.current?.mark("stream-completed")
                 if let response = event["response"] as? [String: Any],
                    let data = try? JSONSerialization.data(withJSONObject: response) {
                     doneText = Self.extractOutputText(from: data) ?? doneText
                 }
-                let text = doneText ?? deltaText
+                let text = doneText ?? output.text
                 guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     throw AIClientError.emptyResponse
                 }
@@ -400,7 +517,7 @@ struct OpenAIClient {
                 let message = error?["message"] as? String ?? event["message"] as? String
                     ?? AppLocalization.format("%@ 请求失败。", modelOption.title)
                 let code = error?["code"] as? String ?? event["code"] as? String ?? "response_failed"
-                throw AIHTTPFailure(status: httpResponse.statusCode, message: userFacingError(message: message, code: code), code: code)
+                throw AIHTTPFailure(status: status, message: userFacingError(message: message, code: code), code: code)
             default:
                 continue
             }

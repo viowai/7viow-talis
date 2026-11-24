@@ -5,6 +5,7 @@ struct TemplateDraft { var title: String; var detail: String; var body: String }
 struct CheckFailure: Error, CustomStringConvertible { let description: String }
 struct Reply {
     var status = 200
+    var mime: String?
     var body: Data
     init(_ object: Any, status: Int = 200) {
         self.status = status
@@ -24,7 +25,7 @@ final class StubProtocol: URLProtocol {
         Self.requests.append(request)
         do {
             let reply = try Self.handler(request)
-            let response = HTTPURLResponse(url: request.url!, statusCode: reply.status, httpVersion: nil, headerFields: nil)!
+            let response = HTTPURLResponse(url: request.url!, statusCode: reply.status, httpVersion: nil, headerFields: reply.mime.map { ["Content-Type": $0] })!
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: reply.body)
             client?.urlProtocolDidFinishLoading(self)
@@ -196,8 +197,10 @@ func runChecks() async throws {
         usesResponsesAPI: false,
         chatReasoningEffort: "low"
     )
+    let zcode = AILocalSubscriptionService(owner: "zcode", displayName: "ZCode", providerID: "local-subscription-zcode",
+                                           modelID: "zcode/GLM-5.3", usesResponsesAPI: false, chatReasoningEffort: "low")
     let previousCatalog = UserDefaults.standard.data(forKey: "ai.local-subscriptions.catalog")
-    AILocalSubscriptionCatalog.save([localKimi])
+    AILocalSubscriptionCatalog.save([localKimi, zcode])
     defer {
         if let previousCatalog {
             UserDefaults.standard.set(previousCatalog, forKey: "ai.local-subscriptions.catalog")
@@ -229,6 +232,46 @@ func runChecks() async throws {
     )
     let localKimiResult = try await localKimiClient.run(action: .refine, input: "fictional local request")
     try check(localKimiResult == "local Kimi response", "local Kimi Work completes through the shared client")
+
+    let zcodeClient = OpenAIClient(apiKey: "", modelOption: .init(id: zcode.providerID, title: zcode.displayName,
+                                      model: zcode.modelID, baseURL: AILocalSubscriptionCatalog.endpoint),
+                                   urlSession: session, modelResolver: ModelResolver())
+    let contentEvent: [String: Any] = ["choices": [["delta": ["content": "正文", "reasoning_content": "内部思考"]]]]
+    let stopEvent: [String: Any] = ["choices": [["delta": [:], "finish_reason": "stop"]]]
+    reset { request in
+        let payload = body(request)
+        try check(payload["stream"] as? Bool == true && payload["reasoning_effort"] as? String == "low"
+                  && payload["model"] as? String == zcode.modelID, "ZCode enables Chat streaming for the selected model and effort")
+        return sseReply([contentEvent, stopEvent])
+    }
+    let result = try await zcodeClient.run(action: .regenerate, input: "测试") { preview in
+        precondition(preview == "正文")
+    }
+    try check(result == "正文", "only content enters the preview and final draft")
+    let noTerminator = Reply(body: Data(String(decoding: sseReply([contentEvent, stopEvent]).body, as: UTF8.self)
+        .replacingOccurrences(of: "data: [DONE]", with: "").utf8))
+    for partial in [sseReply([contentEvent]), noTerminator,
+                    sseReply([contentEvent, ["choices": [["delta": [:], "finish_reason": "length"]]]])] {
+        reset { _ in partial }
+        do {
+            _ = try await zcodeClient.run(action: .refine, input: "测试") { _ in }
+            throw CheckFailure(description: "incomplete Chat stream accepted")
+        } catch AIClientError.incompleteResponse {
+            try check(StubProtocol.requests.count == 1, "incomplete Chat streams fail without resubmitting")
+        }
+    }
+    reset { _ in
+        var reply = textReply("一次返回的整稿")
+        reply.mime = "application/json"
+        return reply
+    }
+    let buffered = try await zcodeClient.run(action: .regenerate, input: "测试") { _ in preconditionFailure() }
+    try check(buffered == "一次返回的整稿" && StubProtocol.requests.count == 1, "a JSON-only gateway uses the original reply once")
+    reset { request in
+        try check(body(request)["stream"] as? Bool == false, "structured clarification still requests one validated result")
+        return textReply(#"{"status":"final","prompt":"完整指令"}"#)
+    }
+    _ = try await zcodeClient.runClarification(session: ClarificationSession(originalQuery: "测试"))
 
     reset { request in
         if request.httpMethod == "GET" { return catalog(["codex/gpt-6.1-terra"]) }
@@ -349,6 +392,54 @@ func runChecks() async throws {
     let document = "# Current\n| GLM-5.4-Flash | stable |\n| GLM-8-Flash | Preview |\n## Preview\nGLM-9-Flash\n# Current again\nGLM-5.5-Flash\nGLM-9-FlashX"
     try check(AIProvider.find("zhipu")!.select(ModelResolver.documentCandidates(document)) == "glm-5.5-flash", "official document filters preview rows and sections")
     try check(ModelResolver.candidate(["name": "models/gemini-3.5-flash-lite", "supportedGenerationMethods": ["embedContent"]])?.textOutput == false, "Gemini capability parsing")
+
+    // A dynamic gateway entry can have a plain ID or a routing alias. The directory
+    // declares its owner. A model name alone is insufficient to authorize a retry.
+    let catalogRows = [["id": "group/fixture-choice", "owned_by": "fixture"],
+                       ["id": "fixture/direct", "owned_by": "fixture"]]
+    let sharedServices = try AILocalSubscriptionCatalog.parseModelsData(JSONSerialization.data(withJSONObject: ["data": catalogRows]))
+    try check(sharedServices.first?.modelID == "group/fixture-choice", "directory selection preserves an explicit group alias")
+    let ownerSuite = "local.talis.owner-tests." + UUID().uuidString
+    let ownerPrefs = UserDefaults(suiteName: ownerSuite)!
+    defer { ownerPrefs.removePersistentDomain(forName: ownerSuite) }
+    let cacheKey = localKimi.providerID + "|" + localKimiOption.baseURL.absoluteString
+    let date = Date()
+    for age in [0.0, 25 * 3600.0] {
+        ownerPrefs.set(try JSONSerialization.data(withJSONObject: [cacheKey: [
+            "model": "zcode/old-replacement", "attemptedAt": date.timeIntervalSinceReferenceDate - age
+        ]]), forKey: "ai.resolved-models.v1")
+        reset { _ in throw CheckFailure(description: "normal selection unexpectedly contacted the directory") }
+        let normal = try await ModelResolver(defaults: ownerPrefs).resolve(option: localKimiOption, apiKey: "", session: session)
+        try check(normal == localKimi.modelID && StubProtocol.requests.isEmpty, "legacy cross-owner cache cannot override selected provider")
+    }
+    let sharedResolver = ModelResolver(defaults: ownerPrefs, now: { date })
+    reset { _ in Reply(["data": [
+        ["id": localKimi.modelID, "owned_by": localKimi.owner],
+        ["id": "zcode/newer", "owned_by": "zcode"],
+        ["id": "kimi-work/misleading", "owned_by": "zcode"],
+        ["id": "plain-model", "owned_by": localKimi.owner]
+    ]]) }
+    let sameOwner = try await sharedResolver.resolve(option: localKimiOption, apiKey: "", session: session, excluding: localKimi.modelID)
+    try check(sameOwner == "plain-model", "same-owner unprefixed alias works; foreign owner with matching prefix is excluded")
+    reset { _ in throw CheckFailure(description: "verified cache unexpectedly rediscovered") }
+    let ownedCache = try await ModelResolver(defaults: ownerPrefs, now: { date }).resolve(option: localKimiOption, apiKey: "", session: session)
+    try check(ownedCache == sameOwner && StubProtocol.requests.isEmpty, "owner-verified replacement cache survives restart")
+    let expiredOwnerCache = try await ModelResolver(defaults: ownerPrefs, now: { date.addingTimeInterval(25 * 3600) }).resolve(option: localKimiOption, apiKey: "", session: session)
+    try check(expiredOwnerCache == localKimi.modelID, "expired cache returns to the configured rolling alias")
+    reset { request in
+        if request.httpMethod == "GET" { return Reply(["data": [["id": "foreign/only", "owned_by": "foreign"]]]) }
+        return Reply(["error": ["code": "model_not_found", "message": "removed"]], status: 404)
+    }
+    let expiredOwnerClient = OpenAIClient(apiKey: "", modelOption: localKimiOption, urlSession: session,
+                                        modelResolver: ModelResolver(defaults: ownerPrefs, now: { date.addingTimeInterval(25 * 3600) }))
+    do {
+        _ = try await expiredOwnerClient.run(action: .refine, input: "fixture")
+        throw CheckFailure(description: "a foreign-only directory should preserve the original error")
+    } catch let error as CheckFailure { throw error }
+    catch {
+        try check(StubProtocol.requests.filter { $0.httpMethod == "POST" }.count == 1 && error.localizedDescription.contains("removed"),
+                  "no cross-owner post after shared retirement")
+    }
 
     // Cache is per provider/endpoint, expires, and persists only nonsecret metadata.
     var simulatedTime = Date()

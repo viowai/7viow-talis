@@ -10,6 +10,7 @@ actor ModelResolver {
     private struct Entry: Codable {
         var model: String
         var attemptedAt: Date
+        var owner: String?
     }
     private let defaults: UserDefaults?
     private let now: () -> Date
@@ -33,24 +34,41 @@ actor ModelResolver {
         let key = provider.id + "|" + option.baseURL.absoluteString
         // A provider's default family can change in an app update. A fresh
         // cache from the previous family must not override that choice.
-        let old = cache[key].flatMap { provider.rank($0.model) != nil ? $0 : nil }
+        let sharedOwner: String?
+        if provider.requiresAPIKey {
+            sharedOwner = nil
+        } else if provider.id == AIProvider.codexSubscriptionID {
+            sharedOwner = "codex"
+        } else {
+            guard let owner = AILocalSubscriptionCatalog.cachedServices.first(where: { $0.providerID == provider.id })?.owner
+            else { throw ModelDiscoveryError.noEligibleModel }
+            sharedOwner = owner
+        }
+        let old = cache[key].flatMap { entry -> Entry? in
+            // Older shared caches accepted candidates from the entire gateway.
+            if let owner = sharedOwner, entry.owner != owner { return nil }
+            return provider.rank(entry.model) != nil ? entry : nil
+        }
         if excluding == nil {
             if let old, now().timeIntervalSince(old.attemptedAt) < 24 * 60 * 60 { return old.model }
             if let alias = provider.rollingAlias { return alias }
         }
         do {
-            let candidates = try await discover(provider: provider, baseURL: option.baseURL, apiKey: apiKey, session: session)
+            let candidates = try await discover(provider: provider, owner: sharedOwner, baseURL: option.baseURL, apiKey: apiKey, session: session)
             guard let selected = provider.select(candidates, excluding: excluding) else { throw ModelDiscoveryError.noEligibleModel }
-            cache[key] = Entry(model: selected, attemptedAt: now())
+            cache[key] = Entry(model: selected, attemptedAt: now(), owner: sharedOwner)
             persist()
             return selected
         } catch {
             if Task.isCancelled || (error as? URLError)?.code == .cancelled { throw error }
+            // Recovery of a rejected shared model requires a currently listed
+            // replacement. An expired cache cannot authorize another inference.
+            if sharedOwner != nil, excluding != nil { throw error }
             // A directory outage is not a model outage. Never use a model already
             // rejected by the inference endpoint as a recovery fallback.
             let fallback = old?.model ?? option.model
             guard fallback != excluding else { throw ModelDiscoveryError.noEligibleModel }
-            cache[key] = Entry(model: fallback, attemptedAt: now())
+            cache[key] = Entry(model: fallback, attemptedAt: now(), owner: sharedOwner)
             persist()
             return fallback
         }
@@ -60,7 +78,7 @@ actor ModelResolver {
         if let data = try? JSONEncoder().encode(cache) { defaults?.set(data, forKey: cacheKey) }
     }
 
-    private func discover(provider: AIProvider, baseURL: URL, apiKey: String, session: URLSession) async throws -> [AIModelCandidate] {
+    private func discover(provider: AIProvider, owner: String?, baseURL: URL, apiKey: String, session: URLSession) async throws -> [AIModelCandidate] {
         if var document = provider.catalogDocument {
             if provider.id == "minimax", baseURL.host == "api.minimax.io" {
                 document = URL(string: "https://platform.minimax.io/docs/guides/models-intro.md")!
@@ -88,7 +106,14 @@ actor ModelResolver {
             guard (response as? HTTPURLResponse)?.statusCode == 200,
                   let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let items = (json["data"] ?? json["models"]) as? [[String: Any]] else { throw ModelDiscoveryError.invalidResponse }
-            result += items.compactMap(Self.candidate)
+            let eligible = items.filter { item in
+                guard let owner else { return true }
+                if let declared = item["owned_by"] as? String { return declared == owner }
+                // Older Codex endpoints omit ownership but use a fixed codex/ model family.
+                return provider.id == AIProvider.codexSubscriptionID
+                    && (item["id"] as? String)?.hasPrefix("codex/") == true
+            }
+            result += eligible.compactMap(Self.candidate)
             let cursor: String?
             let parameter: String
             if json["has_more"] as? Bool == true {

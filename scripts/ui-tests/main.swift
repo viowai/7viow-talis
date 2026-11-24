@@ -119,6 +119,7 @@ final class FixtureProtocol: URLProtocol {
     static var contentQueue: [String] = []
     static var transportError: URLError?
     static var rawBody: Data?
+    static var initialChunk: Data?
     private var responseWork: DispatchWorkItem?
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
@@ -145,11 +146,18 @@ final class FixtureProtocol: URLProtocol {
         let responseContent = responseError == nil
             ? (Self.contentQueue.isEmpty ? Self.content : Self.contentQueue.removeFirst())
             : nil
+        let chunk = request.httpMethod == "POST" ? Self.initialChunk : nil
+        let headers = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: nil, headerFields: chunk == nil ? nil : ["Content-Type": "text/event-stream"])!
+        if let chunk {
+            client?.urlProtocol(self, didReceive: headers, cacheStoragePolicy: .notAllowed)
+            // Padding is an SSE comment. It flushes the small test fragment through URLSession before the delayed completion.
+            client?.urlProtocol(self, didLoad: chunk + Data((":" + String(repeating: " ", count: 16384) + "\n\n").utf8))
+        }
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
             if let error = responseError { self.client?.urlProtocol(self, didFailWithError: error); return }
             let data = rawResponse ?? (try! JSONSerialization.data(withJSONObject: ["choices": [["message": ["content": responseContent ?? Self.content]]]]))
-            self.client?.urlProtocol(self, didReceive: HTTPURLResponse(url: self.request.url!, statusCode: Self.status, httpVersion: nil, headerFields: nil)!, cacheStoragePolicy: .notAllowed)
+            if chunk == nil { self.client?.urlProtocol(self, didReceive: headers, cacheStoragePolicy: .notAllowed) }
             self.client?.urlProtocol(self, didLoad: data)
             self.client?.urlProtocolDidFinishLoading(self)
         }
@@ -176,7 +184,68 @@ configuration.protocolClasses = [FixtureProtocol.self]
 let session = URLSession(configuration: configuration)
 let client = OpenAIClient(apiKey: "fictional-ui-key", modelOption: OpenAIClient.modelOption(for: "deepseek"),
                           urlSession: session, modelResolver: ModelResolver(defaults: nil))
+func checkStreamPreview(option: OpenAIClient.ModelOption, first: String, last: String, finalText: String) {
+    let client = OpenAIClient(apiKey: "", modelOption: option,
+                              urlSession: session, modelResolver: ModelResolver(defaults: nil))
+    let host = PromptWindowController(clientFactory: { client }, motionPreference: { true })
+    let root = host.window!.contentView!
+    let editor = views(root).compactMap { $0 as? PromptTextView }.first!
+    let preview = views(root).compactMap { $0 as? RevisionReadingView }.first!
+    let draft = "整理这份测试清单。"
+    editor.string = draft
+    host.textDidChange(Notification(name: NSText.didChangeNotification, object: editor))
+    FixtureProtocol.initialChunk = Data(first.utf8)
+    FixtureProtocol.rawBody = Data(last.utf8)
+    let oldDelay = FixtureProtocol.delay
+    FixtureProtocol.delay = 0.45
+    defer {
+        FixtureProtocol.delay = oldDelay
+        FixtureProtocol.rawBody = nil
+        FixtureProtocol.initialChunk = nil
+    }
+    for action in ["微调", "重构"] {
+        activate(button(action, in: root))
+        pump(until: { !preview.isHiddenOrHasHiddenAncestor && preview.string == "预览片段" })
+        expect(!preview.isHiddenOrHasHiddenAncestor && !preview.isEditable && preview.string == "预览片段",
+               "the first SSE fragment is visible read-only inside the editor")
+        expect(editor.string == draft && !host.canCopy && !host.canShowHistory,
+               "partial generation cannot commit the draft or add history")
+        if action == "微调" {
+            preview.cancelOperation(nil)
+            expect(editor.isEditable && editor.string == draft && preview.isHiddenOrHasHiddenAncestor && !host.canShowHistory,
+                   "cancelling preview immediately restores the draft")
+        }
+    }
+    pump(until: { editor.isEditable && editor.string == finalText })
+    expect(editor.string == finalText && preview.isHiddenOrHasHiddenAncestor && button("修改记录 · 1 轮", in: root).isEnabled,
+           "a completed stream commits and records exactly one revision")
+}
 if !isUIReview {
+checkStreamPreview(option: OpenAIClient.modelOption(for: AIProvider.codexSubscriptionID),
+                   first: "data: {\"type\":\"response.output_text.delta\",\"delta\":\"预览片段\"}\n\n",
+                   last: "data: {\"type\":\"response.completed\",\"response\":{\"output_text\":\"完整定稿\"}}\n\n", finalText: "完整定稿")
+func checkZCodeStreamPreview() {
+    let key = "ai.local-subscriptions.catalog"
+    let existing = AppIdentity.preferences.data(forKey: key)
+    let zcode = AILocalSubscriptionService(owner: "zcode", displayName: "ZCode", providerID: "local-subscription-zcode",
+                                           modelID: "zcode/GLM-5.3", usesResponsesAPI: false, chatReasoningEffort: "low")
+    AILocalSubscriptionCatalog.save([zcode])
+    defer {
+        if let existing { AppIdentity.preferences.set(existing, forKey: key) } else { AppIdentity.preferences.removeObject(forKey: key) }
+    }
+    checkStreamPreview(option: .init(id: zcode.providerID, title: zcode.displayName, model: zcode.modelID,
+                                     baseURL: AILocalSubscriptionCatalog.endpoint),
+                       first: #"data: {"choices":[{"delta":{"content":"预览片段"}}]}"# + "\n\n",
+                       last: #"data: {"choices":[{"delta":{"content":"已完成"},"finish_reason":"stop"}]}"# + "\n\ndata: [DONE]\n\n",
+                       finalText: "预览片段已完成")
+}
+checkZCodeStreamPreview()
+if CommandLine.arguments.contains("--stream-preview") {
+    if let originalAppLanguage { AppIdentity.preferences.set(originalAppLanguage, forKey: "app.language") }
+    else { AppIdentity.preferences.removeObject(forKey: "app.language") }
+    print("PASS: native editor streamed preview, cancellation, draft preservation, and single final commit")
+    exit(0)
+}
 let announcementTarget = NSTextField(labelWithString: "当前服务状态")
 AppTheme.announce("订阅设置已保存。", from: announcementTarget)
 expect(announcementTarget.accessibilityHelp() == nil && announcementTarget.stringValue == "当前服务状态",
@@ -573,6 +642,11 @@ let initialSpinnerFrame = workingSpinner.convert(workingSpinner.bounds, to: root
 let initialTitleFrame = workingLabel.convert(workingLabel.bounds, to: root)
 expect(abs(initialSpinnerFrame.midY - initialTitleFrame.midY) <= 1,
        "the running spinner is vertically centered on the title line")
+let feedbackBar = views(root).compactMap { $0 as? FeedbackStackView }.first!
+let barFrame = feedbackBar.convert(feedbackBar.bounds, to: root)
+let contentFrame = initialSpinnerFrame.union(initialTitleFrame)
+expect(abs(contentFrame.minX - barFrame.minX - 13) <= 2 && abs(initialTitleFrame.midY - barFrame.midY) <= 1,
+       "the running glyph retains the production leading inset and the single title is vertically centered")
 let feedbackDetail = views(root).compactMap { $0 as? NSTextField }.first { $0.accessibilityLabel() == "状态说明" }!
 feedbackDetail.stringValue = "等待 AI 响应…"
 feedbackDetail.isHidden = false
@@ -581,6 +655,13 @@ let waitingSpinnerFrame = workingSpinner.convert(workingSpinner.bounds, to: root
 let waitingTitleFrame = workingLabel.convert(workingLabel.bounds, to: root)
 expect(abs(waitingSpinnerFrame.midY - waitingTitleFrame.midY) <= 1,
        "adding a second status line never pulls the spinner away from the title")
+let waitingDetailFrame = feedbackDetail.convert(feedbackDetail.bounds, to: root)
+expect(abs(waitingTitleFrame.union(waitingDetailFrame).midY - barFrame.midY) <= 2,
+       "both visible feedback lines share the height around the background center")
+feedbackDetail.isHidden = true
+root.layoutSubtreeIfNeeded()
+expect(abs(workingLabel.convert(workingLabel.bounds, to: root).midY - barFrame.midY) <= 1,
+       "hiding the extra line centers the title again")
 activate(button("停止", in: root))
 expect(editor.isEditable, "stop restores editing")
 expect(editor.string == "原始请求", "stop retains original input")
@@ -591,6 +672,9 @@ while Date() < until { RunLoop.current.run(until: Date().addingTimeInterval(0.01
 expect(editor.string == "停止后新写的内容", "late request completion cannot replace subsequent edits")
 FixtureProtocol.delay = 0.03
 activate(button("微调", in: root))
+root.layoutSubtreeIfNeeded()
+expect(abs(workingLabel.convert(workingLabel.bounds, to: feedbackBar).midY - feedbackBar.bounds.midY) <= 1,
+       "restarting after a two-line wait and stop leaves the single title centered")
 pump(until: { editor.isEditable })
 expect(editor.string == "结果【待填事项】：", "normal completion still updates the editor")
     expect(!views(root).compactMap { $0 as? NSTextField }.contains { $0.stringValue == "微调已完成" && !$0.isHidden }, "result does not duplicate operation status beside clear or under the title")
@@ -777,6 +861,42 @@ pump(until: { noQuestionEditor.isEditable && noQuestionController.clarificationS
 expect(noQuestionEditor.string == "整理后的 Prompt"
        && button("修改记录 · 1 轮", in: noQuestionRoot).isHidden == false,
        "using the generated result applies it and records one explicit clarification turn")
+let changesToggle = views(noQuestionRoot).compactMap { $0 as? NSButton }.first { $0.toolTip == "查看本轮变化" }!
+let revisionNotice = views(noQuestionRoot).compactMap { $0 as? NSTextField }.first { $0.stringValue.contains("可继续编辑") }!
+expect(!revisionNotice.isHidden && !changesToggle.isHidden, "successful AI write shows a persistent hint and toggle")
+pump(until: { revisionNotice.isHidden }, seconds: 6)
+expect(!revisionNotice.isHidden && !changesToggle.isHidden, "the editable hint and diff toggle persist beyond five seconds")
+noQuestionEditor.string += " 手动补写"
+noQuestionController.textDidChange(Notification(name: NSText.didChangeNotification, object: noQuestionEditor))
+expect(revisionNotice.stringValue == "已手动编辑" && !revisionNotice.isHidden, "typing updates the fixed notice")
+let editingSelection = NSRange(location: 1, length: 2)
+noQuestionEditor.setSelectedRange(editingSelection)
+activate(changesToggle)
+let projected = views(noQuestionRoot).compactMap { $0 as? RevisionReadingView }.first!
+expect(noQuestionEditor.enclosingScrollView!.isHidden && !projected.isHiddenOrHasHiddenAncestor && !projected.isEditable,
+       "exactly one editor surface displays the read-only diff")
+expect(projected.string.contains("−  原始 Prompt") && projected.string.contains("+  整理后的 Prompt") && !projected.string.contains("手动补写"),
+       "projection contains only AI changes, with original text on the deleted row")
+expect(revisionNotice.stringValue.contains("新增 1 行 · 删除 1 行"), "diff count uses localized numeric values")
+projected.cancelOperation(nil)
+expect(!noQuestionEditor.enclosingScrollView!.isHidden && projected.isHiddenOrHasHiddenAncestor && noQuestionEditor.string.hasSuffix("手动补写") && noQuestionEditor.selectedRange() == editingSelection,
+       "Escape restores the draft and original selection")
+let workingBeforeRewrite = noQuestionEditor.string
+let longResult = (0..<650).map { "第 " + String($0) + " 行保留段落，核对真实编辑器长文切换和滚动。" }.joined(separator: "\n")
+FixtureProtocol.content = longResult
+noQuestionController.performRegenerate()
+pump(until: { noQuestionController.canRunAI && noQuestionEditor.string == longResult }, seconds: 5)
+expect(noQuestionEditor.string == longResult, "rewrite produces a long editable result")
+activate(changesToggle)
+activate(changesToggle)
+pump(until: { false }, seconds: 0.15)
+expect(projected.isHiddenOrHasHiddenAncestor && noQuestionEditor.string == longResult, "closing a pending difference prevents stale presentation")
+activate(changesToggle)
+pump(until: { !projected.isHiddenOrHasHiddenAncestor }, seconds: 5)
+expect(!projected.isHiddenOrHasHiddenAncestor, "long text difference opens in the editor")
+expect(projected.performKeyEquivalent(with: key("z", code: 6, flags: .command)) && noQuestionEditor.string == workingBeforeRewrite, "undo in difference returns to the prior working draft")
+noQuestionController.promptTextViewDidRequestRedo(noQuestionEditor)
+expect(noQuestionEditor.string == longResult && projected.isHiddenOrHasHiddenAncestor && !revisionNotice.isHidden, "redo restores the contextual footer with a closed comparison")
 noQuestionController.window?.orderOut(nil)
 
 FixtureProtocol.content = "{\"status\":\"ask\",\"questions\":[{\"question\":\"用于什么场景？\",\"options\":[\"个人使用\",\"团队协作\"]}]}"

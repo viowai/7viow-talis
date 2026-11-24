@@ -28,6 +28,7 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
             return AppLocalization.format("第 %@ 轮 · %@ · %@", round, AppLocalization.redisplay(action), timestamp)
         }
     }
+    private let differenceButton = NSButton()
     private let picker = NSPopUpButton()
     private let detail = NSTextView()
     private let scroll = HistoryScrollView()
@@ -61,7 +62,13 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
         back.keyEquivalent = "\u{1b}"
         let spacer = NSView()
         spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        let toolbar = NSStackView(views: [picker, previous, next, spacer, back])
+        differenceButton.setButtonType(.toggle)
+        differenceButton.image = RevisionDifference.buttonIcon
+        differenceButton.toolTip = L("查看本轮变化")
+        differenceButton.setAccessibilityLabel(L("查看本轮变化"))
+        differenceButton.target = self
+        differenceButton.action = #selector(toggleDifference)
+        let toolbar = NSStackView(views: [picker, previous, next, differenceButton, spacer, back])
         toolbar.orientation = .horizontal; toolbar.spacing = 8; toolbar.alignment = .centerY
         for view in [toolbar, readingSurface] { view.translatesAutoresizingMaskIntoConstraints = false; root.addSubview(view) }
         scroll.translatesAutoresizingMaskIntoConstraints = false
@@ -108,6 +115,7 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
     func showLatest(relativeTo editor: NSWindow?) {
         guard !entries.isEmpty, let window else { return }
         picker.selectItem(at: entries.count - 1)
+        differenceButton.state = .off
         render()
         window.appearance = editor?.appearance
         let targetScreen = editor?.screen ?? NSScreen.main
@@ -136,9 +144,18 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
         let content = NSMutableAttributedString(string: "")
         let paragraph = NSMutableParagraphStyle()
         paragraph.paragraphSpacing = 8
-        for (heading, body) in [(L("输入"), input), (L("结果"), entry.output)] {
-            content.append(NSAttributedString(string: heading + "\n", attributes: [.font: AppTheme.semibold(17), .foregroundColor: NSColor.labelColor, .paragraphStyle: paragraph]))
-            content.append(NSAttributedString(string: body + "\n\n", attributes: [.font: AppTheme.regular(15), .foregroundColor: NSColor.labelColor, .paragraphStyle: paragraph]))
+        let before = entry.originalQuery ?? (AppLocalization.original(entry.action) == "追问" ? nil : entry.input)
+        differenceButton.isEnabled = before.map { $0 != entry.output } == true
+        if let before, differenceButton.isEnabled, (window?.isVisible == true || differenceButton.state == .on) {
+            let delta = RevisionDifference(before: before, after: entry.output)
+            content.append(NSAttributedString(string: delta.summary + "\n\n", attributes: [.font: AppTheme.medium(13), .foregroundColor: AppTheme.accentTextColor]))
+            if differenceButton.state == .on { content.append(delta.rendered().0) }
+        }
+        if !differenceButton.isEnabled || differenceButton.state != .on {
+            for (heading, body) in [(L("输入"), input), (L("结果"), entry.output)] {
+                content.append(NSAttributedString(string: heading + "\n", attributes: [.font: AppTheme.semibold(17), .foregroundColor: NSColor.labelColor, .paragraphStyle: paragraph]))
+                content.append(NSAttributedString(string: body + "\n\n", attributes: [.font: AppTheme.regular(15), .foregroundColor: NSColor.labelColor, .paragraphStyle: paragraph]))
+            }
         }
         detail.textStorage?.setAttributedString(content)
         previous.isEnabled = index > 0
@@ -156,9 +173,10 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
         if entries.indices.contains(selection) { picker.selectItem(at: selection) }
         render()
     }
-    @objc private func selectionChanged() { render() }
-    @objc private func previousPressed() { picker.selectItem(at: picker.indexOfSelectedItem - 1); render() }
-    @objc private func nextPressed() { picker.selectItem(at: picker.indexOfSelectedItem + 1); render() }
+    @objc private func toggleDifference() { render() }
+    @objc private func selectionChanged() { differenceButton.state = .off; render() }
+    @objc private func previousPressed() { picker.selectItem(at: picker.indexOfSelectedItem - 1); selectionChanged() }
+    @objc private func nextPressed() { picker.selectItem(at: picker.indexOfSelectedItem + 1); selectionChanged() }
     @objc private func returnPressed() { close() }
     func windowWillClose(_ notification: Notification) { onClose?() }
 }

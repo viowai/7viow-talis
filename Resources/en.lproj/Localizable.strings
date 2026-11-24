@@ -486,3 +486,15 @@ derived status keys keep their complete wording after a language round-trip.
 "追问 · 第 1 轮 · 问题 1/3" = "Grill-me · Round 1 · Question 1/3";
 "追问 · 第 1 轮 · 问题 2/3" = "Grill-me · Round 1 · Question 2/3";
 "追问 · 第 1 轮 · 问题 3/3" = "Grill-me · Round 1 · Question 3/3";
+
+"新增 %@ 行 · 删除 %@ 行" = "Added %@ lines · Removed %@ lines";
+"查看本轮变化" = "View latest changes";
+"本轮修改前后对比" = "Latest changes, read only";
+"关闭对比，继续编辑" = "Close changes and continue editing";
+"%@已完成，可继续编辑" = "%@ complete. You can keep editing.";
+"当前稿另有手动修改" = "Draft also has manual edits";
+"正在整理变化…" = "Preparing changes…";
+
+"正在生成的正文" = "Draft being generated";
+
+"已手动编辑" = "Edited by you";

@@ -49,11 +49,11 @@ func body(_ request: URLRequest) -> [String: Any] {
 }
 func textReply(_ text: String) -> Reply { Reply(["choices": [["message": ["content": text]]]]) }
 func catalog(_ models: [String]) -> Reply { Reply(["data": models.map { ["id": $0] }]) }
-func sseReply(_ events: [[String: Any]]) -> Reply {
+func sseReply(_ events: [[String: Any]], includeDone: Bool = true) -> Reply {
     let lines = events.compactMap { event -> String? in
         guard let data = try? JSONSerialization.data(withJSONObject: event) else { return nil }
         return "data: \(String(decoding: data, as: UTF8.self))\n\n"
-    }.joined() + "data: [DONE]\n\n"
+    }.joined() + (includeDone ? "data: [DONE]\n\n" : "")
     return Reply(body: Data(lines.utf8))
 }
 func reset(_ handler: @escaping (URLRequest) throws -> Reply) { StubProtocol.requests = []; StubProtocol.handler = handler }
@@ -129,20 +129,41 @@ func runChecks() async throws {
             try check(request.url?.host == host && request.url?.path == path, "provider endpoint \(id)")
             let payload = body(request)
             try check(payload["model"] as? String == provider.initialModel, "current model actually sent \(id)")
+            try check(payload["stream"] as? Bool == true && request.value(forHTTPHeaderField: "Accept") == "text/event-stream", "editor requests streaming for \(id)")
             if id == "anthropic" {
                 try check(request.value(forHTTPHeaderField: "x-api-key") == "fictional-anthropic-key" && request.value(forHTTPHeaderField: "Authorization") == nil, "Anthropic native credential")
                 try check(request.value(forHTTPHeaderField: "anthropic-version") == "2023-06-01", "Anthropic required version")
                 try check(payload["system"] != nil && payload["max_tokens"] as? Int == 16384, "Messages request fields")
-                return Reply(["content": [["type": "thinking", "thinking": "private reasoning"], ["type": "text", "text": "final text"]]])
+                return sseReply([
+                    ["type": "content_block_delta", "delta": ["type": "thinking_delta", "thinking": "private reasoning"]],
+                    ["type": "content_block_delta", "delta": ["type": "text_delta", "text": "final text"]],
+                    ["type": "message_delta", "delta": ["stop_reason": "end_turn"]],
+                    ["type": "message_stop"]
+                ], includeDone: false)
             }
             try check(request.value(forHTTPHeaderField: "Authorization") == "Bearer fictional-\(id)-key", "independent provider credential \(id)")
             if ["deepseek", "kimi", "minimax", "openai"].contains(id) { try check(payload["reasoning_effort"] as? String == "low", "interactive effort \(id)") }
             if id == "alibaba" { try check(payload["enable_thinking"] as? Bool == false, "DashScope non-streaming hybrid model compatibility") }
             if id == "bytedance" { try check((payload["thinking"] as? [String: String])?["type"] == "disabled", "Doubao interactive text mode") }
-            return textReply("final text")
+            return sseReply([["choices": [["delta": ["content": "final text"], "finish_reason": "stop"]]]])
         }
-        let result = try await client(id).run(action: .refine, input: "fictional prompt")
+        let result = try await client(id).run(action: .refine, input: "fictional prompt") { text in
+            precondition(text == "final text")
+        }
         try check(result == "final text", "text output excludes thinking \(id)")
+    }
+
+    for terminal in [[], [["type": "message_delta", "delta": ["stop_reason": "max_tokens"]], ["type": "message_stop"]]] as [[[String: Any]]] {
+        reset { request in
+            if request.httpMethod == "GET" { return catalog([AIProvider.find("anthropic")!.initialModel]) }
+            return sseReply([["type": "content_block_delta", "delta": ["type": "text_delta", "text": "片段"]]] + terminal, includeDone: false)
+        }
+        do {
+            _ = try await client("anthropic").run(action: .regenerate, input: "草稿") { _ in }
+            throw CheckFailure(description: "partial Messages stream accepted")
+        } catch AIClientError.incompleteResponse {
+            try check(StubProtocol.requests.filter { $0.httpMethod == "POST" }.count == 1, "truncated Messages stream never submits the draft twice")
+        }
     }
 
     // The local subscription bridge uses the eligible Codex subscription and a

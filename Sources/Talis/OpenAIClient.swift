@@ -335,14 +335,13 @@ struct OpenAIClient {
         let provider = AIProvider.find(modelOption.id)
         let anthropic = provider?.apiProtocol == .anthropicMessages
         let responses = provider?.apiProtocol == .openAIResponses
-        let streamChat = modelOption.id == "local-subscription-zcode"
-            && provider?.apiProtocol == .chatCompletions && preview != nil
+        let stream = responses || preview != nil
         let endpoint = anthropic ? "messages" : responses ? "responses" : "chat/completions"
         var request = URLRequest(url: modelOption.baseURL.appendingPathComponent(endpoint))
         request.httpMethod = "POST"
         ModelResolver.authorize(&request, provider: provider, apiKey: apiKey)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if responses || streamChat { request.setValue("text/event-stream", forHTTPHeaderField: "Accept") }
+        if stream { request.setValue("text/event-stream", forHTTPHeaderField: "Accept") }
         request.timeoutInterval = 60
 
         var payload: [String: Any]
@@ -365,7 +364,7 @@ struct OpenAIClient {
                     ["role": "system", "content": system],
                     ["role": "user", "content": user]
                 ],
-                "stream": streamChat
+                "stream": stream
             ]
         }
         if anthropic {
@@ -384,12 +383,14 @@ struct OpenAIClient {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         RequestTiming.current?.mark("post", model: model)
-        if responses || streamChat {
+        if stream {
             let (bytes, http) = try await openStream(request)
-            if streamChat {
-                return try await readChatStream(bytes, response: http, preview: preview)
+            if http.mimeType == "application/json" {
+                return try await readBufferedText(bytes, status: http.statusCode)
             }
-            return try await readResponsesStream(bytes, status: http.statusCode, preview: preview)
+            if responses { return try await readResponsesStream(bytes, status: http.statusCode, preview: preview) }
+            if anthropic { return try await readMessagesStream(bytes, status: http.statusCode, preview: preview) }
+            return try await readChatStream(bytes, response: http, preview: preview)
         }
         let (data, response) = try await urlSession.data(for: request)
         RequestTiming.current?.mark("response-body")
@@ -436,21 +437,59 @@ struct OpenAIClient {
         }
     }
 
+    private func readBufferedText(_ bytes: URLSession.AsyncBytes, status: Int) async throws -> String {
+        var data = Data()
+        for try await byte in bytes { data.append(byte) }
+        RequestTiming.current?.mark("response-body")
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        if json?["error"] != nil { throw httpFailure(data: data, status: status) }
+        let choice = (json?["choices"] as? [[String: Any]])?.first
+        if let reason = choice?["finish_reason"] as? String, reason != "stop" { throw AIClientError.incompleteResponse }
+        if let reason = json?["stop_reason"] as? String, !["end_turn", "stop_sequence"].contains(reason) { throw AIClientError.incompleteResponse }
+        if let state = json?["status"] as? String, state != "completed" { throw AIClientError.incompleteResponse }
+        guard let text = Self.extractOutputText(from: data) else { throw AIClientError.emptyResponse }
+        return text
+    }
+
+    private func readMessagesStream(_ bytes: URLSession.AsyncBytes, status: Int,
+                                    preview: (@MainActor @Sendable (String) -> Void)?) async throws -> String {
+        var output = StreamingText()
+        var stopReason: String?
+        for try await line in bytes.lines {
+            try Task.checkCancellation()
+            guard line.hasPrefix("data:") else { continue }
+            let data = Data(line.dropFirst(5).utf8)
+            guard let event = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw AIClientError.incompleteResponse
+            }
+            let delta = event["delta"] as? [String: Any]
+            switch event["type"] as? String {
+            case "content_block_start":
+                if let block = event["content_block"] as? [String: Any], block["type"] as? String == "text" {
+                    let separator = output.text.isEmpty ? "" : "\n"
+                    await output.append(separator + (block["text"] as? String ?? ""), preview: preview)
+                }
+            case "content_block_delta":
+                if delta?["type"] as? String == "text_delta", let text = delta?["text"] as? String {
+                    await output.append(text, preview: preview)
+                }
+            case "message_delta":
+                if let reason = delta?["stop_reason"] as? String { stopReason = reason }
+            case "message_stop":
+                guard stopReason == "end_turn" || stopReason == "stop_sequence" else { throw AIClientError.incompleteResponse }
+                RequestTiming.current?.mark("stream-completed")
+                return output.text
+            case "error":
+                throw httpFailure(data: data, status: status)
+            default:
+                continue
+            }
+        }
+        throw AIClientError.incompleteResponse
+    }
+
     private func readChatStream(_ bytes: URLSession.AsyncBytes, response: HTTPURLResponse,
                                 preview: (@MainActor @Sendable (String) -> Void)?) async throws -> String {
-        // Gateways may answer a streaming request with one ordinary completion.
-        if response.mimeType == "application/json" {
-            var data = Data()
-            for try await byte in bytes { data.append(byte) }
-            RequestTiming.current?.mark("response-body")
-            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-            if json?["error"] != nil { throw httpFailure(data: data, status: response.statusCode) }
-            let choice = (json?["choices"] as? [[String: Any]])?.first
-            if let reason = choice?["finish_reason"] as? String, reason != "stop" { throw AIClientError.incompleteResponse }
-            guard let text = Self.extractOutputText(from: data) else { throw AIClientError.emptyResponse }
-            return text
-        }
-
         var output = StreamingText()
         var stopped = false
         for try await line in bytes.lines {

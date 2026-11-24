@@ -8,13 +8,13 @@
 
 ## 用 DMG 安装
 
-1. 下载 [Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg)。升级前先保存正在编辑的文字并退出 Talis。
+1. 下载 [Talis v1.1.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.dmg)。升级前先保存正在编辑的文字并退出 Talis。
 2. 打开 DMG，把 `Talis.app` 拖到磁盘映像里的「应用程序」快捷方式，再从「应用程序」打开 Talis。
 3. 应用使用 ad-hoc 签名，未经 Apple 公证。如果首次打开时被 macOS 拦截，请先确认文件来自本仓库，再到「系统设置 → 隐私与安全性」选择「仍要打开」（如果系统提供该选项）。见 [Apple 的首次打开说明](https://support.apple.com/zh-cn/102445)。
 
-Talis 1.1.0 会沿用个人模板、语言和服务商设置，以及钥匙串里保存的密钥。退出前请先保存需要的草稿和本次修改记录。macOS 可能会再次询问是否允许访问钥匙串。
+Talis 1.1.1 会沿用个人模板、语言和服务商设置，以及钥匙串里保存的密钥。退出前请先保存需要的草稿和本次修改记录。macOS 可能会再次询问是否允许访问钥匙串。
 
-备用下载是 [应用 ZIP](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.zip)。解压后把 `Talis.app` 移到「应用程序」，首次启动使用相同的步骤。
+备用下载是 [应用 ZIP](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.zip)。解压后把 `Talis.app` 移到「应用程序」，首次启动使用相同的步骤。
 
 ## 从源码安装
 

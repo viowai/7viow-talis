@@ -12,17 +12,17 @@ Talis 是 Mac 上的开源 Prompt 编辑器。按 `Option + Space` 唤起，先�
 
 [查看完整发布文案示例](https://viow.ai/work/talis/)。
 
-当前源码版本：`1.1.0`（Build 44）。
+当前源码版本：`1.1.1`（Build 45）。
 
 连续修改会结合最近 3 轮上下文。打开“修改记录”可在独立窗口回看输入与结果；开始新任务时，用内容区的“清空”按钮。
 
-AI 改完后，可以直接在编辑器里接着写。点 **±** 查看最近一次 AI 增删了哪些文字，再点一次回到当前稿，自己补写的内容仍然保留。通过本机 Codex 或 ZCode 订阅重构、微调时，可以边生成边看；中途停止会保留原稿。
+AI 改完后，可以直接在编辑器里接着写。点 **±** 查看最近一次 AI 增删了哪些文字，再点一次回到当前稿，自己补写的内容仍然保留。Talis 支持的所有模型都可以在重构和微调时预览结果。模型返回的文字会随生成显示。中途停止会保留原稿。
 
 ## 安装
 
 ### 用 DMG 安装
 
-下载 [Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg)。打开磁盘映像，把 `Talis.app` 拖到「应用程序」，再从「应用程序」打开 Talis。需要 Apple Silicon 和 macOS 13 或更新版本。
+下载 [Talis v1.1.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.dmg)。打开磁盘映像，把 `Talis.app` 拖到「应用程序」，再从「应用程序」打开 Talis。需要 Apple Silicon 和 macOS 13 或更新版本。
 
 应用使用 ad-hoc 签名，未经 Apple 公证。如果首次打开时被 macOS 拦截，请先确认文件来自本仓库，再到「系统设置 → 隐私与安全性」选择「仍要打开」（如果系统提供该选项）。见 [Apple 的首次打开说明](https://support.apple.com/zh-cn/102445)。 也可以使用下方的源码安装方式。
 

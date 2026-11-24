@@ -8,13 +8,13 @@ To hand installation to a local AI agent, use the [English agent installation gu
 
 ## Install from the DMG
 
-1. Download the [Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg). When upgrading, save any text you are editing and quit Talis first.
+1. Download the [Talis v1.1.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.dmg). When upgrading, save any text you are editing and quit Talis first.
 2. Open the DMG, drag `Talis.app` onto the **Applications** shortcut in the disk image, then open it from **Applications**.
 3. The app is ad-hoc signed and is not notarized by Apple. If macOS blocks the first launch, confirm that you downloaded the app from this repository, then choose **Open Anyway** in **System Settings → Privacy & Security** if the option is available. See [Apple’s first-launch instructions](https://support.apple.com/en-us/102445).
 
-Talis 1.1.0 keeps your personal templates, language and provider settings, and existing Keychain entries. Save any draft or revision history you need before quitting. macOS may ask you to allow Keychain access again.
+Talis 1.1.1 keeps your personal templates, language and provider settings, and existing Keychain entries. Save any draft or revision history you need before quitting. macOS may ask you to allow Keychain access again.
 
-The [app ZIP](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.zip) is an alternate download. Unzip it, move `Talis.app` to **Applications**, and follow the same first-launch steps.
+The [app ZIP](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.zip) is an alternate download. Unzip it, move `Talis.app` to **Applications**, and follow the same first-launch steps.
 
 ## Install from Source
 

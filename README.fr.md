@@ -10,13 +10,13 @@ Talis est un espace de travail de prompts pour macOS. Notez une idée, créez un
 
 Les révisions successives utilisent les 3 derniers tours comme contexte. Ouvrez **Historique des révisions** pour retrouver les entrées et résultats de la session en cours. Utilisez **Effacer** pour commencer une nouvelle tâche.
 
-Après une révision par l’IA, continuez à écrire ou cliquez sur **±** pour voir les ajouts et les suppressions. Fermez la comparaison pour retrouver votre brouillon avec vos propres modifications.
+Après une révision par l’IA, continuez à écrire ou cliquez sur **±** pour voir les ajouts et les suppressions. Fermez la comparaison pour retrouver votre brouillon avec vos propres modifications. Avec tous les modèles pris en charge, le texte s’affiche à mesure qu’il arrive pendant la réécriture ou la retouche.
 
 ## Installation
 
 ### Installer depuis le DMG
 
-Téléchargez [Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg). Ouvrez l’image disque, faites glisser `Talis.app` vers **Applications**, puis lancez l’app depuis ce dossier. Talis nécessite un Mac Apple Silicon et macOS 13 ou ultérieur.
+Téléchargez [Talis v1.1.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.dmg). Ouvrez l’image disque, faites glisser `Talis.app` vers **Applications**, puis lancez l’app depuis ce dossier. Talis nécessite un Mac Apple Silicon et macOS 13 ou ultérieur.
 
 L’app est signée ad hoc et n’a pas été notariée par Apple. Si macOS bloque le premier lancement, vérifiez que le téléchargement provient de ce dépôt et, si l’option est proposée, choisissez **Ouvrir quand même** dans **Réglages Système → Confidentialité et sécurité**. Consultez les [instructions d’Apple pour le premier lancement](https://support.apple.com/en-us/102445).
 

@@ -10,13 +10,13 @@ Talis é um espaço de trabalho de prompts para macOS. Anote uma ideia, crie um 
 
 As revisões consecutivas usam as 3 rodadas mais recentes como contexto. Abra **Histórico de revisões** para consultar as entradas e os resultados da sessão atual. Use **Limpar** para começar outra tarefa.
 
-Depois que a IA revisar o texto, continue escrevendo ou clique em **±** para ver o que foi acrescentado ou removido. Feche a comparação para voltar ao rascunho com suas próprias alterações.
+Depois que a IA revisar o texto, continue escrevendo ou clique em **±** para ver o que foi acrescentado ou removido. Feche a comparação para voltar ao rascunho com suas próprias alterações. Com qualquer modelo compatível, você pode acompanhar o texto à medida que ele chega durante a reescrita ou o refinamento.
 
 ## Instalação
 
 ### Instalar pelo DMG
 
-Baixe o [Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg). Abra a imagem de disco, arraste `Talis.app` para **Aplicativos** e abra o app nessa pasta. É necessário um Mac com Apple Silicon e macOS 13 ou posterior.
+Baixe o [Talis v1.1.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.dmg). Abra a imagem de disco, arraste `Talis.app` para **Aplicativos** e abra o app nessa pasta. É necessário um Mac com Apple Silicon e macOS 13 ou posterior.
 
 O app tem assinatura ad-hoc e não foi notarizado pela Apple. Se o macOS bloquear a primeira abertura, confirme que o download veio deste repositório e, se a opção aparecer, selecione **Abrir Mesmo Assim** em **Ajustes do Sistema → Privacidade e Segurança**. Consulte as [instruções da Apple para abrir apps](https://support.apple.com/en-us/102445).
 

@@ -12,17 +12,17 @@ Talis is an open-source prompt editor for Mac. Press `Option + Space` to open it
 
 [See the launch brief from first draft to final prompt](https://viow.ai/work/talis/en/).
 
-Current source version: `1.1.0` (Build 44).
+Current source version: `1.1.1` (Build 45).
 
 Consecutive revisions use the latest 3 rounds as context. Open **Revision History** to review inputs and results from the current session. Use **Clear** in the editor to start a new task.
 
-After an AI edit, keep writing in the editor or click **±** to see exactly what changed. Close the comparison to return to your draft, including any edits you made yourself. With Codex or ZCode subscription sharing, Rewrite and Refine can preview text as it arrives. Stopping keeps your original draft.
+After an AI edit, keep writing in the editor or click **±** to see exactly what changed. Close the comparison to return to your draft, including any edits you made yourself. Rewrite and Refine support live previews with every model available in Talis. Text appears as the model sends it. Stopping keeps your original draft.
 
 ## Install
 
 ### Install from the DMG
 
-Download the [Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg). Open the disk image, drag `Talis.app` to **Applications**, then open it from **Applications**. The app requires Apple Silicon and macOS 13 or later.
+Download the [Talis v1.1.1 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.1/talis-v1.1.1-macos-arm64-build45.dmg). Open the disk image, drag `Talis.app` to **Applications**, then open it from **Applications**. The app requires Apple Silicon and macOS 13 or later.
 
 The app is ad-hoc signed and is not notarized by Apple. If macOS blocks the first launch, confirm that you downloaded the app from this repository, then choose **Open Anyway** in **System Settings → Privacy & Security** if the option is available. See [Apple’s first-launch instructions](https://support.apple.com/en-us/102445). You can also build and install from source below.
 

@@ -147,7 +147,7 @@ final class FixtureProtocol: URLProtocol {
             ? (Self.contentQueue.isEmpty ? Self.content : Self.contentQueue.removeFirst())
             : nil
         let chunk = request.httpMethod == "POST" ? Self.initialChunk : nil
-        let headers = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: nil, headerFields: chunk == nil ? nil : ["Content-Type": "text/event-stream"])!
+        let headers = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: nil, headerFields: ["Content-Type": request.httpMethod == "POST" && (chunk != nil || rawResponse?.starts(with: Data("data:".utf8)) == true) ? "text/event-stream" : "application/json"])!
         if let chunk {
             client?.urlProtocol(self, didReceive: headers, cacheStoragePolicy: .notAllowed)
             // Padding is an SSE comment. It flushes the small test fragment through URLSession before the delayed completion.
@@ -224,6 +224,10 @@ if !isUIReview {
 checkStreamPreview(option: OpenAIClient.modelOption(for: AIProvider.codexSubscriptionID),
                    first: "data: {\"type\":\"response.output_text.delta\",\"delta\":\"预览片段\"}\n\n",
                    last: "data: {\"type\":\"response.completed\",\"response\":{\"output_text\":\"完整定稿\"}}\n\n", finalText: "完整定稿")
+checkStreamPreview(option: OpenAIClient.modelOption(for: "deepseek"),
+                   first: #"data: {"choices":[{"delta":{"content":"预览片段"}}]}"# + "\n\n",
+                   last: #"data: {"choices":[{"delta":{"content":"已完成"},"finish_reason":"stop"}]}"# + "\n\ndata: [DONE]\n\n",
+                   finalText: "预览片段已完成")
 func checkZCodeStreamPreview() {
     let key = "ai.local-subscriptions.catalog"
     let existing = AppIdentity.preferences.data(forKey: key)

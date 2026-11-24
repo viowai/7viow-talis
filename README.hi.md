@@ -10,11 +10,13 @@ Talis macOS के लिए Prompt कार्यस्थल है। को
 
 लगातार संशोधन में पिछली 3 राउंड का संदर्भ लिया जाता है। मौजूदा सत्र के इनपुट और नतीजे देखने के लिए **Revision History** खोलें। नया काम शुरू करने के लिए एडिटर में **Clear** चुनें।
 
+AI के संशोधन के बाद आप एडिटर में लिखना जारी रख सकते हैं। **±** पर क्लिक करके देखें कि AI ने क्या जोड़ा या हटाया। तुलना बंद करने पर आपका ड्राफ़्ट आपके अपने बदलावों के साथ वापस दिखता है।
+
 ## इंस्टॉल करें
 
 ### DMG से इंस्टॉल करें
 
-[Talis v1.0.2 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.0.2/talis-v1.0.2-macos-arm64-build43.dmg) डाउनलोड करें। डिस्क इमेज खोलें, `Talis.app` को **Applications** में खींचें, फिर वहीं से ऐप खोलें। Apple Silicon वाला Mac और macOS 13 या नया संस्करण आवश्यक है।
+[Talis v1.1.0 DMG](https://github.com/viowai/7viow-talis/releases/download/v1.1.0/talis-v1.1.0-macos-arm64-build44.dmg) डाउनलोड करें। डिस्क इमेज खोलें, `Talis.app` को **Applications** में खींचें, फिर वहीं से ऐप खोलें। Apple Silicon वाला Mac और macOS 13 या नया संस्करण आवश्यक है।
 
 ऐप ad-hoc हस्ताक्षरित है और Apple द्वारा notarized नहीं है। पहली बार खोलते समय macOS रोक दे, तो पुष्टि करें कि ऐप इसी repository से डाउनलोड किया है। विकल्प उपलब्ध हो तो **System Settings → Privacy & Security** में **Open Anyway** चुनें। [Apple के पहली बार खोलने के निर्देश](https://support.apple.com/en-us/102445) देखें।
 

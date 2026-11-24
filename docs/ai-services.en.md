@@ -17,7 +17,7 @@ Subscription mode does not require an API key. Talis reads the services currentl
 
 API Key mode: DeepSeek, Kimi, MiniMax, OpenAI API, Anthropic, Google, xAI, Tencent Hunyuan, Baidu ERNIE, Alibaba Qwen, ByteDance Doubao, and Zhipu GLM.
 
-Subscription mode dynamically lists services exposed by the local gateway. On this Mac the verified list currently contains Codex, OpenAI, Kimi Work and DeepSeek. The exact list and subscription rights remain controlled by the gateway and service accounts.
+Subscription mode dynamically lists services exposed by the local gateway. When available, shared Codex and ZCode services support a read-only preview during Rewrite and Refine. Grill-me shows questions or a final prompt once the response has been validated. The exact list and subscription rights remain controlled by the gateway and service accounts.
 
 Quotas and subscription rights remain controlled by each provider.
 

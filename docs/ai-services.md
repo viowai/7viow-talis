@@ -15,7 +15,7 @@
 
 ## 支持的厂商
 
-API Key 组：DeepSeek、Kimi、MiniMax、OpenAI API、Anthropic、Google、xAI、腾讯混元、百度文心、阿里通义、字节豆包、智谱 GLM。订阅共享组按本机网关实际暴露的服务动态列出；当前本机验证可见 `Codex`、`OpenAI`、`Kimi Work` 和 `DeepSeek`。实际可见项和权益仍以本机网关与服务商账号状态为准。
+API Key 组：DeepSeek、Kimi、MiniMax、OpenAI API、Anthropic、Google、xAI、腾讯混元、百度文心、阿里通义、字节豆包、智谱 GLM。订阅共享组按本机网关实际暴露的服务动态列出；可用的 Codex 和 ZCode 共享服务支持重构、微调的只读流式预览。追问会在整轮响应校验完成后显示问题或最终 Prompt。实际可见项和权益仍以本机网关与服务商账号状态为准。
 
 ## 模型自动跟进
 
